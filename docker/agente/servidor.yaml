@@ -1,0 +1,15 @@
+# Agente del SERVIDOR de la replica (contenedor rfid-monitor-agente, red de host).
+installation_id: ROOMFID-LOCAL
+device_code: SERVIDOR
+label: Servidor RoomFID (.155)
+type: server
+nodo_url: http://192.168.1.165:8080       # rfid-monitor
+interval_s: 15
+host_root: /host
+collectors:
+  system: true
+  disks: ["/"]
+  docker: { proyectos: [roomfid-rep] }     # en esta maquina hay mas cosas: solo lo nuestro
+  roomfid:
+    url: http://192.168.1.166:8090/estado  # irfid-almacen
+    sondear_lectores: true

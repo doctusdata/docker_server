@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+env/
+*.egg
+
+# Env — el patrón con * cubre también las copias (.env.bak-*), que llevan
+# las mismas credenciales que el original y se escapaban con las reglas de
+# nombre exacto.
+.env
+.env.*
+.env.local
+.env.*.local
+backend/.env
+backend/.env.*
+frontend/.env.local
+!backend/.env.example
+
+# Node / Next
+node_modules/
+.next/
+out/
+dist/
+.pnpm-store/
+*.tsbuildinfo
+next-env.d.ts
+
+# Uploads / generados
+backend/uploads/
+backend/generated/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+._*
+.vscode/
+.idea/
+*.swp
+
+# Playwright
+test-results/
+playwright-report/
+
+# Backups de BBDD: el directorio entero, sin excepciones.
+# Antes esto era una lista de patrones por extensión y por nombre de copia,
+# y cada formato nuevo del script se escapaba hasta que alguien lo añadía.
+backups/
+# Y los volcados sueltos, esté donde esté el fichero: un `pg_dump` lanzado a
+# mano fuera de backups/ es igual de indeseable dentro del repositorio.
+*.dump
+*.sql
+.env.prod
+.env.prod.local
+
+# --- rep_server ---------------------------------------------------------
+# Credenciales de Mosquitto: las genera scripts/gen-mosquitto-passwd.sh, y el
+# fichero pertenece al uid 1883 (el broker lo exige), asi que git ni lo lee.
+docker/mosquitto/passwd
+*/mosquitto/passwd
+
+# Volcados y copias de la base: pesan y se regeneran con scripts/volcado.sh
+sql/*.sql
+*/volcado/*.sql
+snapshot_*.sql
+
+# Material de referencia entregado por el cliente, no es codigo nuestro
+RoomFID Máquina/
+
+# Copias de seguridad hechas a mano antes de un cambio
+*.bak
+*.bak-*
+docker-compose.yml.bak
+
+# Datos de simulacion
+.sim-data/

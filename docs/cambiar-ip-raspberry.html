@@ -1,0 +1,482 @@
+<title>IP de la Raspberry en pruebas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: una columna de lectura, con los bloques de consola a sangre completa.
+     Paleta sobria de taller: pizarra fría y ámbar de señalización. */
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --fg: #16191d;
+    --fg-soft: #585f6b;
+    --line: #d4d8de;
+    --accent: #0f5d8c;
+    --accent-soft: #e4eef5;
+    --warn: #8a5a00;
+    --warn-soft: #fdf3e0;
+    --stop: #a32b20;
+    --stop-soft: #fcebe9;
+    --go: #1f6b3f;
+    --go-soft: #e8f3ec;
+    --code-bg: #1d2127;
+    --code-fg: #e6e9ed;
+    --code-dim: #8a93a0;
+    --font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171b; --surface: #1c2026; --fg: #e8eaed; --fg-soft: #9aa2ae;
+      --line: #2f353d; --accent: #68b4e0; --accent-soft: #1b2b36;
+      --warn: #e0a850; --warn-soft: #2e2516; --stop: #e8847a; --stop-soft: #331c19;
+      --go: #74c495; --go-soft: #16291e;
+      --code-bg: #0e1115; --code-fg: #e6e9ed; --code-dim: #767f8c;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171b; --surface: #1c2026; --fg: #e8eaed; --fg-soft: #9aa2ae;
+    --line: #2f353d; --accent: #68b4e0; --accent-soft: #1b2b36;
+    --warn: #e0a850; --warn-soft: #2e2516; --stop: #e8847a; --stop-soft: #331c19;
+    --go: #74c495; --go-soft: #16291e;
+    --code-bg: #0e1115; --code-fg: #e6e9ed; --code-dim: #767f8c;
+    color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-sans);
+         font-size: 15px; line-height: 1.6; margin: 0; }
+  .wrap { max-width: 50rem; margin: 0 auto; padding-inline: 20px; padding-block: 2.5rem 4rem; }
+
+  header { border-bottom: 2px solid var(--fg); padding-bottom: 1.2rem; margin-bottom: 2rem; }
+  .eyebrow { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+             text-transform: uppercase; color: var(--accent); margin: 0 0 0.5rem; font-weight: 600; }
+  h1 { font-size: clamp(1.7rem, 5vw, 2.3rem); line-height: 1.15; margin: 0 0 0.6rem;
+       font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; }
+  header p { margin: 0; color: var(--fg-soft); font-size: 0.95rem; max-width: 42ch; }
+
+  h2 { font-size: 1.25rem; margin: 2.8rem 0 0.9rem; font-weight: 600; letter-spacing: -0.01em;
+       display: flex; align-items: baseline; gap: 0.6rem; text-wrap: balance; }
+  h2 .n { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);
+          font-weight: 600; flex: none; }
+  h3 { font-size: 1rem; margin: 1.8rem 0 0.5rem; font-weight: 600; }
+  p { margin: 0 0 0.9rem; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: 0.35rem; }
+  li::marker { color: var(--fg-soft); }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--accent-soft);
+         color: var(--fg); padding: 0.1em 0.35em; border-radius: 3px; }
+
+  pre { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.65;
+        background: var(--code-bg); color: var(--code-fg); padding: 1rem 1.1rem;
+        border-radius: 6px; margin: 0 0 1.1rem; overflow-x: auto; min-width: 0; }
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  pre .c { color: var(--code-dim); }
+  pre .p { color: #7fc4a0; }
+
+  .box { border-left: 3px solid; padding: 0.85rem 1rem; margin: 0 0 1.2rem; border-radius: 0 5px 5px 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .box .lbl { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em;
+              text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.3rem; }
+  .stop { background: var(--stop-soft); border-color: var(--stop); }
+  .stop .lbl { color: var(--stop); }
+  .warn { background: var(--warn-soft); border-color: var(--warn); }
+  .warn .lbl { color: var(--warn); }
+  .go { background: var(--go-soft); border-color: var(--go); }
+  .go .lbl { color: var(--go); }
+
+  .tbl { overflow-x: auto; margin: 0 0 1.2rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 28rem; }
+  th { text-align: left; padding: 0.5rem 0.7rem; border-bottom: 1.5px solid var(--fg);
+       font-weight: 600; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase;
+       color: var(--fg-soft); }
+  td { padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td code { font-size: 0.8rem; }
+
+  dl { margin: 0 0 1.2rem; }
+  dt { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;
+       color: var(--accent); margin-top: 0.9rem; }
+  dd { margin: 0.15rem 0 0; padding-left: 0; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+           gap: 1rem; margin: 0 0 1.4rem; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+          padding: 1rem 1.1rem; min-width: 0; }
+  .card h3 { margin: 0 0 0.5rem; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; }
+  .card .tag { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600;
+               background: var(--fg); color: var(--bg); padding: 0.12em 0.4em; border-radius: 3px; }
+  .card dl { margin: 0; font-size: 0.86rem; }
+  .card dt { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+             color: var(--fg-soft); font-family: var(--font-sans); margin-top: 0.6rem; }
+  .card dt:first-child { margin-top: 0; }
+  .card dd { margin: 0; }
+
+  .ck { list-style: none; padding: 0; }
+  .ck li { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.9rem; }
+  .ck .sq { flex: none; width: 1.05rem; height: 1.05rem; border: 1.5px solid var(--accent);
+            border-radius: 3px; margin-top: 0.25rem; }
+  .ck strong { display: block; font-weight: 600; }
+  .ck span { color: var(--fg-soft); font-size: 0.88rem; }
+
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
+           color: var(--fg-soft); font-size: 0.83rem; }
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">RoomFID · Despliegue</p>
+  <h1>Cambiar la IP de la Raspberry en pruebas</h1>
+  <p>Qué direcciones se tocan al montar el sistema fuera del laboratorio, y con qué script.</p>
+</header>
+
+<h2><span class="n">01</span> Lo primero: qué IP se cambia</h2>
+
+<p>En el proyecto conviven tres grupos de direcciones. Confundirlos es el error más
+frecuente, así que conviene fijarlo antes de abrir ningún fichero.</p>
+
+<div class="tbl">
+<table>
+<tr><th style="width:30%">Direcciones</th><th style="width:22%">Dónde viven</th><th>¿Se cambian?</th></tr>
+<tr>
+  <td><code>192.168.1.155</code><br><code>.160</code> … <code>.167</code></td>
+  <td>Red interna de Docker (<code>docker-compose.yml</code>)</td>
+  <td><strong>Nunca.</strong> Son internas: nadie de fuera las ve. Están fijas a propósito para que las configuraciones heredadas del sistema original funcionen sin reescribirse.</td>
+</tr>
+<tr>
+  <td>La de la propia Pi</td>
+  <td>Configuración de red de la Raspberry</td>
+  <td><strong>Sí.</strong> Es la que cambia al mover el sistema de sitio.</td>
+</tr>
+<tr>
+  <td><code>.157</code> <code>.158</code> <code>.159</code> <code>.205</code></td>
+  <td><code>topologia.json</code></td>
+  <td><strong>Solo si el lector cambió de dirección físicamente.</strong></td>
+</tr>
+</table>
+</div>
+
+<div class="go">
+<span class="lbl">En una frase</span>
+<p>No toques las IP del <code>docker-compose.yml</code>. Al montar en pruebas solo se cambian
+<strong>la IP de la Raspberry</strong> y, si han cambiado de sitio, <strong>las de los lectores
+en <code>topologia.json</code></strong>.</p>
+</div>
+
+<h2><span class="n">02</span> Elige el escenario</h2>
+
+<p>Hay dos formas de montar, y la IP de la Pi se gestiona de forma distinta en cada una.
+Decide primero: no son intercambiables.</p>
+
+<div class="cards">
+  <div class="card">
+    <h3><span class="tag">A</span> Banco de pruebas</h3>
+    <dl>
+      <dt>Carpeta</dt><dd><code>rep_server/banco/</code></dd>
+      <dt>Red</dt><dd>Aislada: switch propio, solo la Pi y los lectores</dd>
+      <dt>IP de la Pi</dt><dd><strong>Toma la <code>.155</code></strong>, la del servidor original</dd>
+      <dt>Lectores</dt><dd>Se recablean al switch del banco</dd>
+      <dt>Para qué</dt><dd>Probar el sistema nuevo con las antenas reales, de punta a punta</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h3><span class="tag">B</span> Prueba en campo</h3>
+    <dl>
+      <dt>Carpeta</dt><dd><code>rep_server/campo/</code></dd>
+      <dt>Red</dt><dd>La real del almacén, con el sistema en marcha</dd>
+      <dt>IP de la Pi</dt><dd>Una IP <strong>libre</strong> de la <code>192.168.1.x</code></dd>
+      <dt>Lectores</dt><dd>Se quedan donde están</dd>
+      <dt>Para qué</dt><dd>Observar en paralelo sin interferir (modo sombra)</dd>
+    </dl>
+  </div>
+</div>
+
+<h2><span class="n">03</span> Escenario A · la Pi toma la <code>.155</code></h2>
+
+<p>Aquí la Raspberry <strong>suplanta al servidor original</strong>: toma su misma IP para que
+los lectores, que la tienen configurada de fábrica, publiquen contra ella sin reconfigurarse.</p>
+
+<div class="stop">
+<span class="lbl">Antes de nada</span>
+<p>No pueden existir dos equipos con la <code>192.168.1.155</code> en la misma red. Si la Pi
+toma esa IP conectada a la red real, <strong>se rompe el sistema de producción</strong>. Por eso
+la prueba va en un switch aparte.</p>
+<p><code>ip.sh</code> comprueba si esa IP ya responde y se niega a seguir, pero no te fíes solo
+de eso: verifica el cableado con la vista.</p>
+</div>
+
+<h3>Paso 1 · Sacar el volcado (antes de cambiar la IP)</h3>
+
+<p>El volcado necesita llegar al servidor original, así que se saca <strong>con la Pi todavía
+en la red normal</strong>. Después ya no habrá forma.</p>
+
+<pre><code><span class="c"># En la Pi, aún con su IP de siempre</span>
+cd ~/roomfid/rep_server/banco
+cp .env.ejemplo .env          <span class="c"># revisar las claves</span>
+./scripts/volcado.sh          <span class="c"># deja volcado/produccion.sql</span></code></pre>
+
+<p>La dirección del servidor de origen se declara en <code>.env</code>:</p>
+
+<pre><code>ORIGEN_PG_HOST=192.168.1.155   <span class="c"># solo para el volcado</span>
+ORIGEN_PG_PORT=5432</code></pre>
+
+<p>Si no hay acceso, sirve cualquier volcado de <code>gestion_rfid</code> copiado a mano en
+<code>banco/volcado/produccion.sql</code>.</p>
+
+<h3>Paso 2 · Recablear</h3>
+
+<p>Mueve los cuatro lectores del switch del almacén al del banco, y conecta ahí la Pi.</p>
+
+<div class="warn">
+<span class="lbl">Comprobar antes de desplazarse</span>
+<p>Si los lectores se alimentan por PoE, <strong>el switch del banco tiene que ser PoE</strong>.
+Sin PoE no arrancan y el viaje se pierde.</p>
+</div>
+
+<h3>Paso 3 · Dar la IP</h3>
+
+<pre><code>cd ~/roomfid/rep_server/banco
+
+./scripts/ip.sh ver       <span class="c"># qué IP tiene ahora</span>
+./scripts/ip.sh on        <span class="c"># añade la .155 hasta el próximo reinicio</span>
+./scripts/ip.sh fijar     <span class="c"># o permanente: sobrevive a reinicios</span></code></pre>
+
+<dl>
+  <dt>ip.sh on</dt>
+  <dd>Añade la <code>.155</code> <strong>además</strong> de la que ya tenga. Se pierde al reiniciar.
+  Es la opción para una prueba de unas horas.</dd>
+  <dt>ip.sh fijar</dt>
+  <dd>La fija en NetworkManager. Sobrevive a reinicios y cortes de luz; con los contenedores,
+  que también vuelven solos, el banco se recupera sin que nadie toque nada. Es la opción si
+  el montaje se queda varios días.</dd>
+  <dt>ip.sh off</dt>
+  <dd>La quita, tanto la temporal como la permanente.</dd>
+  <dt>ip.sh ver</dt>
+  <dd>Muestra las IP actuales y las permanentes. No cambia nada.</dd>
+</dl>
+
+<p>Los tres primeros aceptan la interfaz como segundo argumento, si no es <code>eth0</code>:</p>
+
+<pre><code>./scripts/ip.sh on eth1</code></pre>
+
+<p>La Pi conserva su IP original además de la <code>.155</code>, así que puedes seguir entrando
+por SSH por la dirección de siempre.</p>
+
+<h3>Paso 4 · Arrancar</h3>
+
+<pre><code>./scripts/arrancar.sh     <span class="c"># la primera vez restaura el volcado</span>
+./scripts/estado.sh       <span class="c"># salud, ciclos y movimientos</span></code></pre>
+
+<div class="warn">
+<span class="lbl">Sin internet en la nave</span>
+<p><code>arrancar.sh</code> no construye ni descarga nada. Las imágenes tienen que estar ya
+construidas: ejecuta <code>./scripts/construir.sh</code> en casa, con conexión (15–30 min la
+primera vez). Si falta alguna, <code>arrancar.sh</code> avisa y no arranca.</p>
+</div>
+
+<h3>Efecto en el sistema original</h3>
+
+<p>Mientras los lectores están en el banco, el almacén se queda sin ellos: el batch original
+marcará todo como no encontrado (<code>Stock=0</code>) a los cinco minutos y lo asignará al
+último carnet que pasara por la puerta.</p>
+
+<p>Al devolver los lectores, las lecturas vuelven a poner el material en <code>Stock=1</code>,
+pero <strong><code>EPC_User</code> se queda con el valor de la prueba</strong>. Hay que avisar
+al cliente, o pausar Node-RED en la Raspberry original si lo autoriza.</p>
+
+<h2><span class="n">04</span> Escenario B · la Pi con una IP libre</h2>
+
+<p>Aquí la Pi se conecta a la red del almacén <strong>sin suplantar a nadie</strong>: escucha el
+mismo broker que el sistema en marcha y calcula en paralelo. No enciende lectores ni escribe
+en la base de producción.</p>
+
+<h3>Paso 1 · Fijar la IP en la Raspberry</h3>
+
+<p>Pide al cliente una IP libre de la <code>192.168.1.x</code>, fija o reservada en el DHCP. No
+uses la <code>.155</code> ni las de los lectores (<code>.157</code>, <code>.158</code>,
+<code>.159</code>, <code>.205</code>).</p>
+
+<p>Aquí <strong>no se usa <code>ip.sh</code></strong> — ese script es exclusivo del banco. Se
+configura con las herramientas de la propia Pi:</p>
+
+<pre><code><span class="c"># Ver las conexiones y cómo están configuradas</span>
+nmcli con show
+
+<span class="c"># Fijar IP estática (ajusta el nombre de la conexión y la dirección)</span>
+sudo nmcli con modify <span class="p">"Wired connection 1"</span> \
+     ipv4.method manual \
+     ipv4.addresses 192.168.1.201/24 \
+     ipv4.gateway 192.168.1.1 \
+     ipv4.dns 192.168.1.1
+sudo nmcli con up <span class="p">"Wired connection 1"</span>
+
+ip -4 -br addr show eth0        <span class="c"># comprobar</span></code></pre>
+
+<h3>Paso 2 · Decirle dónde está el servidor real</h3>
+
+<p>Una sola variable en <code>campo/.env</code>:</p>
+
+<pre><code>cd ~/roomfid/rep_server/campo
+cp .env.ejemplo .env
+nano .env</code></pre>
+
+<pre><code>SERVIDOR=192.168.1.155     <span class="c"># Mosquitto, PostgreSQL y API del sistema real</span>
+MQTT_PORT=1883
+MQTT_USER=gestion_rfid
+MQTT_PASS=                 <span class="c"># rellenar</span>
+API_KEY=                   <span class="c"># rellenar</span>
+
+PROD_PG_PORT=5432          <span class="c"># base de producción: SOLO lectura</span>
+PROD_PG_USER=rfidroom
+PROD_PG_PASSWORD=          <span class="c"># rellenar</span>
+
+PG_PASSWORD=               <span class="c"># base PROPIA de la Pi: cualquier clave</span></code></pre>
+
+<div class="go">
+<span class="lbl">Un solo sitio</span>
+<p><code>SERVIDOR</code> es la única variable donde se escribe la dirección del servidor real:
+de ahí la toman el broker y las conexiones de lectura. Si el servidor cambia de IP, cámbiala
+aquí y reinicia con <code>./scripts/arrancar.sh</code>.</p>
+</div>
+
+<h3>Paso 3 · Puertos, si alguno choca</h3>
+
+<div class="tbl">
+<table>
+<tr><th style="width:34%">Variable</th><th style="width:20%">Por omisión</th><th>Servicio</th></tr>
+<tr><td><code>PUERTO_PG</code></td><td><code>15432</code></td><td>PostgreSQL propio de la Pi</td></tr>
+<tr><td><code>PUERTO_HEALTH</code></td><td><code>8090</code></td><td>Salud de irfid</td></tr>
+<tr><td><code>PUERTO_VISOR</code></td><td><code>8020</code></td><td>Visor web</td></tr>
+<tr><td><code>PUERTO_MONITOR</code></td><td><code>8080</code></td><td>Monitor</td></tr>
+</table>
+</div>
+
+<h3>Paso 4 · Arrancar y comparar</h3>
+
+<pre><code>./scripts/volcado.sh      <span class="c"># copia la base de producción (lectura)</span>
+./scripts/arrancar.sh
+./scripts/estado.sh
+./scripts/comparar.sh     <span class="c"># contrasta el cálculo nuevo con el de producción</span></code></pre>
+
+<h2><span class="n">05</span> Si un lector cambia de IP</h2>
+
+<p>Se declara en el <code>topologia.json</code> de la carpeta que uses:</p>
+
+<pre><code>"lectores": [
+  {
+    "devmac": "3c:e4:b0:dc:ca:d7",   <span class="c">&lt;-- identifica al lector DE VERDAD</span>
+    "devid": "Almacen-1",
+    "devip": "192.168.1.157",        <span class="c">&lt;-- cambiar aquí</span>
+    "ubicacion": "Almacen-1",
+    "rol": "inventario",
+    "orden_ciclo": 1
+  },</code></pre>
+
+<div class="warn">
+<span class="lbl">La MAC es lo que cuenta</span>
+<p>El sistema identifica cada lector <strong>por su MAC</strong>, no por su IP; la IP solo se usa
+para encenderlo y apagarlo. Si llega una trama con una MAC que no está en
+<code>topologia.json</code>, <strong>se descarta</strong> y el lector sale como
+<code>lectores_desconocidos</code> en <code>http://127.0.0.1:8090/health</code>. Es el primer
+sitio donde mirar si un lector «no hace nada».</p>
+</div>
+
+<p>Después, reinicia para que se recargue: <code>./scripts/arrancar.sh</code></p>
+
+<h2><span class="n">06</span> Comprobaciones, en orden</h2>
+
+<p>Si una falla, arréglala antes de pasar a la siguiente.</p>
+
+<ul class="ck">
+  <li><span class="sq"></span><div><strong>La Pi tiene la IP que debe</strong>
+    <span><code>ip -4 -br addr show eth0</code></span></div></li>
+  <li><span class="sq"></span><div><strong>Los contenedores están sanos</strong>
+    <span><code>./scripts/estado.sh</code> y <code>docker compose ps</code> — todos <em>healthy</em></span></div></li>
+  <li><span class="sq"></span><div><strong>Los lectores responden</strong>
+    <span><code>./scripts/lector.sh 157 status</code>, luego <code>start</code> y <code>stop</code></span></div></li>
+  <li><span class="sq"></span><div><strong>Publican y se les reconoce</strong>
+    <span><code>curl -s http://127.0.0.1:8090/health | python3 -m json.tool</code> — <code>lectores_desconocidos</code> debe estar vacío</span></div></li>
+  <li><span class="sq"></span><div><strong>Las lecturas llegan a la base</strong>
+    <span>Contar filas de <code>EPC_readings</code> de los últimos 5 minutos</span></div></li>
+  <li><span class="sq"></span><div><strong>Las interfaces abren</strong>
+    <span>Visor <code>:8020</code> · Monitor <code>:8080</code> · API <code>:3000</code> · Mailpit <code>:8025</code> (solo banco)</span></div></li>
+</ul>
+
+<p>Desde el portátil, conectado al mismo switch con una IP libre (por ejemplo
+<code>192.168.1.200</code>), sustituyendo <code>&lt;ip-pi&gt;</code> por la de la Raspberry.</p>
+
+<h2><span class="n">07</span> Volver atrás</h2>
+
+<pre><code><span class="c"># 1. Parar el sistema de pruebas</span>
+cd ~/roomfid/rep_server/banco      <span class="c"># o campo/</span>
+./scripts/parar.sh
+
+<span class="c"># 2. Quitar la IP del servidor (SOLO en el banco)</span>
+./scripts/ip.sh off
+
+<span class="c"># 3. Comprobar que ya no la tiene</span>
+./scripts/ip.sh ver</code></pre>
+
+<ol>
+  <li><strong>Devolver los cables</strong> de los lectores al switch del almacén (escenario A).</li>
+  <li><strong>Reanudar Node-RED</strong> en la Raspberry original, si se pausó.</li>
+  <li><strong>Avisar al cliente</strong>: los <code>EPC_User</code> de ese periodo son de la
+  prueba, no retiradas reales.</li>
+</ol>
+
+<div class="stop">
+<span class="lbl">No olvidar</span>
+<p>El paso 2 es imprescindible. Si la Pi conserva la <code>.155</code> y vuelve a la red real,
+chocará con el servidor original. Con <code>ip.sh fijar</code> la IP es permanente, y
+<code>ip.sh off</code> es la única forma de quitarla.</p>
+</div>
+
+<p>Para empezar de cero con otro volcado, <code>parar.sh -v</code> borra además la base de la Pi.</p>
+
+<h2><span class="n">08</span> Cuando algo no va</h2>
+
+<div class="tbl">
+<table>
+<tr><th style="width:30%">Síntoma</th><th style="width:30%">Causa probable</th><th>Qué hacer</th></tr>
+<tr>
+  <td><code>ip.sh on</code> dice «ALTO: ya responde en esta red»</td>
+  <td>La Pi está en la red real, no en la del banco</td>
+  <td>Revisa el cableado. Es la protección funcionando: <strong>no la fuerces</strong>.</td>
+</tr>
+<tr>
+  <td>Los lectores no publican nada</td>
+  <td>Siguen apuntando al servidor original, o no tienen alimentación</td>
+  <td>Comprueba que la Pi tiene la <code>.155</code> y que el switch da PoE si hace falta.</td>
+</tr>
+<tr>
+  <td>Un lector sale en <code>lectores_desconocidos</code></td>
+  <td>Su MAC no coincide con <code>topologia.json</code></td>
+  <td>Copia la MAC que indique <code>/health</code> y reinicia.</td>
+</tr>
+<tr>
+  <td>Falta <code>volcado/produccion.sql</code></td>
+  <td>No se sacó el volcado antes de cambiar la IP</td>
+  <td><code>volcado.sh</code> con acceso al servidor, o copia un volcado a mano.</td>
+</tr>
+<tr>
+  <td>Avisa de que falta una imagen</td>
+  <td>No se construyeron en casa</td>
+  <td><code>construir.sh</code> con internet. No se puede hacer en la nave.</td>
+</tr>
+<tr>
+  <td>El visor o el monitor no abren</td>
+  <td>Puerto ocupado, o el portátil en otra red</td>
+  <td>Cambia los puertos en <code>.env</code> (campo) y da al portátil una IP libre de la <code>192.168.1.x</code>.</td>
+</tr>
+<tr>
+  <td>La IP se pierde al reiniciar</td>
+  <td>Se usó <code>ip.sh on</code>, que es temporal</td>
+  <td>Usa <code>ip.sh fijar</code>.</td>
+</tr>
+</table>
+</div>
+
+<footer>
+Scripts en <code>rep_server/banco/scripts/</code> y <code>rep_server/campo/scripts/</code>.
+Ver también <code>banco/README.md</code> y <code>campo/README.md</code>.
+</footer>
+
+</div>

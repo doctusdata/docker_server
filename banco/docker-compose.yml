@@ -1,0 +1,200 @@
+# RoomFID - BANCO DE PRUEBAS con las antenas reales.
+#
+# Una Raspberry toma la IP del servidor (192.168.1.155) en una red AISLADA con los lectores
+# reales y hace todo lo que hacia el servidor original, ya con el sistema nuevo:
+#
+#   pg              PostgreSQL 18 con un volcado de produccion      -> :5432 (JDBC del lector de puerta)
+#   mosquitto       mismo usuario/clave que el original            -> :1883 (los lectores publican aqui)
+#   api             la API de produccion (irfid/gestion-rfid-api)   -> :3000
+#   irfid-almacen   trazabilidad + ESPEJO en las tablas legacy      -> :8090/health
+#   irfid-orquestador  ciclo de lectores (en lugar de Node-RED)     -> :8091/health
+#   visor, monitor, mailpit                                         -> :8020, :8080, :8025
+#
+# Sin subred fija: los contenedores usan la red de Docker y los puertos se publican en la
+# IP de la Pi (.155). El servidor y la Raspberry originales no se tocan.
+name: roomfid-banco
+
+volumes:
+  pgdata:
+  mosquitto-data:
+  irfid-spool:
+  monitor-data:
+
+x-irfid-env: &irfid-env
+  TZ: ${TZ:-Europe/Madrid}
+  IRFID_PG_DSN: "host=pg port=5432 dbname=gestion_rfid user=rfidroom password=${RFID_PG_PASSWORD}"
+  IRFID_MQTT_HOST: mosquitto
+  IRFID_MQTT_USERNAME: ${MQTT_USER}
+  IRFID_MQTT_PASSWORD: ${MQTT_PASS}
+  IRFID_LEGACY_MIRROR: "true"
+  IRFID_LEGACY_TZ: ${TZ:-Europe/Madrid}
+  IRFID_CICLOS_PARA_CIRCULANTE: ${IRFID_CICLOS_PARA_CIRCULANTE:-3}
+  IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
+  IRFID_HORAS_ALERTA_TEMPORAL: ${IRFID_HORAS_ALERTA_TEMPORAL:-24}
+  IRFID_VENTANA_MIN_S: ${IRFID_VENTANA_MIN_S:-30}
+  IRFID_VENTANA_GAP_S: ${IRFID_VENTANA_GAP_S:-20}
+  IRFID_SMTP_HOST: mailpit
+  IRFID_SMTP_PORT: "1025"
+  IRFID_SMTP_STARTTLS: "false"
+  IRFID_SMTP_FROM: roomfid@banco.local
+  IRFID_LOG_LEVEL: ${IRFID_LOG_LEVEL:-INFO}
+
+x-irfid: &irfid
+  build:
+    context: ../../irfid/servicio
+    dockerfile: ../../rep_server/docker/irfid/Dockerfile
+  image: roomfid/irfid:latest
+  restart: unless-stopped
+  depends_on:
+    pg:
+      condition: service_healthy
+    mosquitto:
+      condition: service_started
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8090/health', timeout=4).status==200 else 1)"]
+    interval: 15s
+    timeout: 5s
+    retries: 4
+    start_period: 30s
+
+services:
+  pg:
+    image: postgres:18
+    container_name: banco-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPER_PASS}
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
+      RFID_PG_PASSWORD: ${RFID_PG_PASSWORD}
+      TZ: ${TZ:-Europe/Madrid}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+      - ./volcado:/volcado:ro
+    ports:
+      - "${PUERTO_PG:-5432}:5432"   # 5432 en la Pi: el lector de puerta entra por JDBC
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rfidroom -d gestion_rfid"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 60s
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: banco-mosquitto
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro
+      - mosquitto-data:/mosquitto/data
+    ports:
+      - "1883:1883"
+
+  api:
+    build:
+      context: ../../irfid/gestion-rfid-api
+      dockerfile: ../../rep_server/banco/api/Dockerfile
+    container_name: banco-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      TZ: ${TZ:-Europe/Madrid}
+    volumes:
+      - ./api/app.json:/app/config/app.json:ro
+    depends_on:
+      pg:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  irfid-almacen:
+    <<: *irfid
+    container_name: banco-irfid-almacen
+    command: ["sh", "-c", "python -m irfid migrar && exec python -m irfid almacen"]
+    environment:
+      <<: *irfid-env
+      IRFID_MQTT_CLIENT_ID: irfid-almacen
+      IRFID_SPOOL_PATH: /data/spool/irfid-spool.sqlite3
+    volumes:
+      - irfid-spool:/data/spool
+      - ./topologia.json:/app/topologia.json:ro
+    ports:
+      - "8090:8090"
+
+  irfid-orquestador:
+    <<: *irfid
+    container_name: banco-irfid-orquestador
+    # Sin orquestador (ORQUESTADOR=no en .env) las ventanas se detectan por inactividad:
+    # util si alguien enciende/para los lectores a mano.
+    profiles: ["orquestador"]
+    command: ["python", "-m", "irfid", "orquestador"]
+    environment:
+      <<: *irfid-env
+      IRFID_MQTT_CLIENT_ID: irfid-orquestador
+      IRFID_ORQ_VENTANA_S: ${IRFID_ORQ_VENTANA_S:-120}
+      IRFID_ORQ_PAUSA_S: ${IRFID_ORQ_PAUSA_S:-5}
+      IRFID_ORQ_PERIODO_S: ${IRFID_ORQ_PERIODO_S:-300}
+      IRFID_ORQ_DIGEST_USER: ${LECTOR_USER:-admin}
+      IRFID_ORQ_DIGEST_PASSWORD: ${LECTOR_PASS:-admin}
+    ports:
+      - "8091:8090"
+
+  visor:
+    build:
+      context: ../../raspi_visor
+      dockerfile: ../rep_server/docker/visor/Dockerfile
+    container_name: banco-visor
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      RFID_API_URL: http://api:3000/api
+      RFID_API_KEY: ${API_KEY}
+      CORS_ORIGINS: http://localhost:8020
+    ports:
+      - "8020:8020"
+
+  monitor:
+    build:
+      context: ../../monitor
+      dockerfile: ../rep_server/docker/monitor/Dockerfile
+      additional_contexts:
+        despliegue: ../docker/monitor
+    container_name: banco-monitor
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      ROOMFID_AGENTES_TOKEN: ${ROOMFID_AGENTES_TOKEN}
+    volumes:
+      - ./node.yaml:/etc/roomfid/node.yaml:ro
+      - monitor-data:/data
+    ports:
+      - "8080:8080"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: banco-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+
+  # Agente de monitorizacion de esta Pi: red de host (sondea los lectores y llega a
+  # irfid y al nodo por los puertos publicados), disco y contenedores en solo lectura.
+  monitor-agente:
+    build:
+      context: ../../monitor
+      dockerfile: ../rep_server/docker/agente/Dockerfile
+    image: roomfid/agente:latest
+    container_name: banco-monitor-agente
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      ROOMFID_AGENTE_TOKEN: ${ROOMFID_AGENTES_TOKEN}
+    volumes:
+      - ./agente.yaml:/etc/roomfid/agente.yaml:ro
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -1,0 +1,17 @@
+# Agente de una Raspberry. El device_code tiene que estar dado de alta en el node.yaml
+# del nodo (source agent, remoto: true); si no, el nodo rechaza sus informes.
+installation_id: ROOMFID-LOCAL
+device_code: RASPBERRY-01
+label: Raspberry sala 1
+type: raspberry
+nodo_url: http://192.168.1.155:8080     # el nodo del monitor (en el servidor)
+interval_s: 15
+host_root: /host
+collectors:
+  system: true
+  disks: ["/"]
+  docker: true                          # o {proyectos: [roomfid-banco]} para filtrar
+# Equipos sin agente que dependen de esta Raspberry: se sondean desde aqui y, si la
+# Raspberry cae, el monitor los da por desconocidos, no por caidos.
+probes:
+  - {device_code: TABLET-01, label: Tablet sala 1, type: tablet, kind: icmp, target: 192.168.1.60, timeout_ms: 2000}

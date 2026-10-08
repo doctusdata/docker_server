@@ -1,0 +1,24 @@
+# Agente de monitorizacion para una RASPBERRY (u otra maquina que no sea el servidor).
+# Mide la maquina (cpu, memoria, temperatura, disco, contenedores) y sondea los equipos
+# sin agente que cuelgan de ella (tablets). Informa al nodo del monitor.
+#
+#   cp .env.ejemplo .env && cp agente.yaml.ejemplo agente.yaml   # y editar los dos
+#   ./instalar.sh
+name: roomfid-agente
+
+services:
+  agente:
+    build:
+      context: ../../monitor
+      dockerfile: ../rep_server/docker/agente/Dockerfile
+    image: roomfid/agente:latest
+    container_name: roomfid-agente
+    restart: unless-stopped
+    network_mode: host            # las sondas salen por la red de la maquina
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      ROOMFID_AGENTE_TOKEN: ${ROOMFID_AGENTES_TOKEN}
+    volumes:
+      - ./agente.yaml:/etc/roomfid/agente.yaml:ro
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -1,0 +1,14 @@
+{
+  "database_name": "gestion_rfid",
+  "Scan_time_nofound": 5,
+  "database": {
+    "host": "192.168.1.155",
+    "user": "rfidroom",
+    "password": "rfidroom@2025",
+    "database": "gestion_rfid",
+    "port": 5432
+  },
+  "logDirectory": "logs",
+  "Almacen_id": "Almacen-1",
+  "Access_door": "Puerta-1"
+}

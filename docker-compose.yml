@@ -1,0 +1,491 @@
+# Replica virtualizada del sistema RoomFID.
+#
+# La red usa la subred original 192.168.1.0/24 con las mismas IPs, para que
+# ninguna configuracion de los servicios ni de los flows tenga que reescribirse.
+#
+# Perfiles (./scripts/up.sh <perfiles...>):
+#   (ninguno)    nucleo: postgres, mosquitto, api, irfid-almacen, visor, monitor
+#   orquestador  irfid-orquestador: ciclo de lectores (sustituye a Node-RED)
+#   legacy       almacen_mqtt (Node) y el batch Servicio_postgresql: modo sombra / rollback
+#   backup       Node-RED en contenedor (rollback del orquestador sin la Pi)
+#   sim          lectores simulados (solo en la replica)
+#   dev          mailpit (SMTP de pruebas) y destino SSH de archivado (solo en la replica)
+# En el sistema real, 192.168.1.155 es UN solo host con mosquitto + postgres +
+# api; aqui se reproduce compartiendo namespace de red (network_mode: service:).
+name: roomfid-rep
+
+networks:
+  rfidnet:
+    name: rfidnet
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
+
+volumes:
+  pgdata:
+  mosquitto-data:
+  nodered-data:
+  irfid-spool:
+  irfid-archivo:
+  monitor-data:
+
+x-sim-common: &sim-common
+  profiles: ["sim"]
+  build:
+    context: .
+    dockerfile: docker/simulador/Dockerfile
+  restart: unless-stopped
+  environment: &sim-env
+    TZ: ${TZ}
+    MQTT_URL: mqtt://192.168.1.155:1883
+    MQTT_USER: ${MQTT_USER}
+    MQTT_PASS: ${MQTT_PASS}
+    DIGEST_USER: admin
+    DIGEST_PASS: admin
+    DIGEST_REALM: AdvanNet
+    HTTP_PORT: "80"
+    PGHOST: 192.168.1.155
+    PGPORT: "5432"
+    PGUSER: ${PG_USER}
+    PGPASSWORD: ${PG_PASSWORD}
+    PGDATABASE: ${PG_DATABASE}
+  healthcheck:
+    test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/device/status >/dev/null || exit 1"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 20s
+
+x-irfid-env: &irfid-env
+  TZ: ${TZ}
+  IRFID_PG_DSN: "host=192.168.1.155 port=5432 dbname=${PG_DATABASE} user=${PG_USER} password=${PG_PASSWORD}"
+  IRFID_MQTT_HOST: 192.168.1.155
+  IRFID_MQTT_USERNAME: ${MQTT_USER}
+  IRFID_MQTT_PASSWORD: ${MQTT_PASS}
+  IRFID_LEGACY_MIRROR: ${IRFID_LEGACY_MIRROR:-false}
+  IRFID_LEGACY_TZ: ${TZ}
+  IRFID_CICLOS_PARA_CIRCULANTE: ${IRFID_CICLOS_PARA_CIRCULANTE:-3}
+  IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
+  IRFID_HORAS_ALERTA_TEMPORAL: ${IRFID_HORAS_ALERTA_TEMPORAL:-24}
+  IRFID_SMTP_HOST: ${IRFID_SMTP_HOST:-}
+  IRFID_SMTP_PORT: ${IRFID_SMTP_PORT:-587}
+  IRFID_SMTP_USER: ${IRFID_SMTP_USER:-}
+  IRFID_SMTP_PASSWORD: ${IRFID_SMTP_PASSWORD:-}
+  IRFID_SMTP_STARTTLS: ${IRFID_SMTP_STARTTLS:-true}
+  IRFID_SMTP_FROM: ${IRFID_SMTP_FROM:-roomfid@localhost}
+  IRFID_LOG_LEVEL: ${IRFID_LOG_LEVEL:-INFO}
+
+x-irfid-common: &irfid-common
+  build:
+    context: ../irfid/servicio
+    dockerfile: ../../rep_server/docker/irfid/Dockerfile
+  image: roomfid/irfid:latest
+  restart: unless-stopped
+  depends_on:
+    rfid-postgres:
+      condition: service_healthy
+    rfid-mosquitto:
+      condition: service_healthy
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8090/health', timeout=4).status==200 else 1)"]
+    interval: 15s
+    timeout: 5s
+    retries: 4
+    start_period: 30s
+
+services:
+  # --- Servidor 192.168.1.155 -------------------------------------------
+  rfid-postgres:
+    # PostgreSQL 18: uuidv7() nativo para las claves de traza. Los volcados legacy (14)
+    # se restauran sin cambios. Desde la 18 la imagen guarda los datos en
+    # /var/lib/postgresql/18/docker: el volumen se monta en el directorio padre.
+    image: postgres:18
+    container_name: rfid-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPER_PASS}
+      POSTGRES_DB: postgres
+      TZ: ${TZ}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+      - ./sql:/sql:ro
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.155
+    ports:
+      - "15432:5432"   # 5432 del host ya esta ocupado
+      - "1883:1883"    # mosquitto (comparte namespace de red)
+      - "3000:3000"    # api       (comparte namespace de red)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_DATABASE}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 40s
+
+  rfid-mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: rfid-mosquitto
+    restart: unless-stopped
+    network_mode: "service:rfid-postgres"
+    depends_on:
+      rfid-postgres:
+        condition: service_started
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./docker/mosquitto/passwd:/mosquitto/config/passwd:ro
+      - mosquitto-data:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h 127.0.0.1 -u ${MQTT_USER} -P '${MQTT_PASS}' -t '$$SYS/broker/version' -C 1 -W 3 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  rfid-api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: rfid-api
+    restart: unless-stopped
+    network_mode: "service:rfid-postgres"
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      TZ: ${TZ}
+
+  # --- irfid: almacen (MQTT -> trazabilidad + espejo legacy) ------------
+  # Sustituye a rfid-almacen-mqtt y a rfid-servicio-pg. En modo sombra (perfil legacy
+  # activo) debe ir con IRFID_LEGACY_MIRROR=false.
+  rfid-irfid-almacen:
+    <<: *irfid-common
+    container_name: rfid-irfid-almacen
+    command: ["sh", "-c", "python -m irfid migrar && exec python -m irfid almacen"]
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.166
+    ports:
+      - "8090:8090"
+    volumes:
+      - irfid-spool:/data/spool
+    environment:
+      <<: *irfid-env
+      IRFID_MQTT_CLIENT_ID: irfid-almacen
+      IRFID_SPOOL_PATH: /data/spool/irfid-spool.sqlite3
+
+  # --- irfid: orquestador (ciclo de lectores; sustituye a Node-RED) -----
+  # Mientras este activo, Node-RED (Pi o perfil backup) debe estar PARADO: los dos
+  # encenderian y apagarian los mismos lectores.
+  rfid-irfid-orquestador:
+    <<: *irfid-common
+    profiles: ["orquestador"]
+    container_name: rfid-irfid-orquestador
+    command: ["python", "-m", "irfid", "orquestador"]
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.161
+    ports:
+      - "8091:8090"
+    environment:
+      <<: *irfid-env
+      IRFID_MQTT_CLIENT_ID: irfid-orquestador
+      IRFID_ORQ_VENTANA_S: ${IRFID_ORQ_VENTANA_S:-120}
+      IRFID_ORQ_PAUSA_S: ${IRFID_ORQ_PAUSA_S:-5}
+      IRFID_ORQ_PERIODO_S: ${IRFID_ORQ_PERIODO_S:-300}
+      IRFID_ORQ_DIGEST_USER: ${IRFID_ORQ_DIGEST_USER:-admin}
+      IRFID_ORQ_DIGEST_PASSWORD: ${IRFID_ORQ_DIGEST_PASSWORD:-admin}
+
+  # --- Software CPU comunicaciones (MQTT -> PostgreSQL) -----------------
+  rfid-almacen-mqtt:
+    profiles: ["legacy"]
+    build:
+      context: .
+      dockerfile: docker/almacen-mqtt/Dockerfile
+    container_name: rfid-almacen-mqtt
+    restart: unless-stopped
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.160
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+      rfid-mosquitto:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ}
+
+  # --- Software CPU procesos (batch, disparado por Node-RED) ------------
+  rfid-servicio-pg:
+    profiles: ["legacy"]
+    build:
+      context: .
+      dockerfile: docker/servicio-pg/Dockerfile
+    container_name: rfid-servicio-pg
+    restart: unless-stopped
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.163
+    ports:
+      - "8081:8081"
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # --- Lectores RFID simulados ------------------------------------------
+  rfid-lector-157:
+    <<: *sim-common
+    container_name: rfid-lector-157
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.157
+    ports:
+      - "8157:80"
+    environment:
+      <<: *sim-env
+      MODE: warehouse
+      DEVID: Almacen-1
+      DEVIP: 192.168.1.157
+      DEVMAC: "3c:e4:b0:dc:ca:d7"
+      MQTT_TOPIC: TAG_readings/scenario1
+      RF_PERIOD_MS: "1600"
+      TAGS_PER_CYCLE: "60"
+      ANTENNAS: "1,2,3,4"
+      EPC_SOURCE: db
+      # Todo el catalogo del almacen, recorrido en rueda: cada ventana ve el stock
+      # completo, como un lector real. /sim/retirar?epc=... simula que sale.
+      POOL_SIZE: "5000"
+      SWEEP: "true"
+      FOREIGN_RATIO: "0.05"
+      START_AUTO: "false"
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+      rfid-mosquitto:
+        condition: service_healthy
+
+  rfid-lector-158:
+    <<: *sim-common
+    container_name: rfid-lector-158
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.158
+    ports:
+      - "8158:80"
+    environment:
+      <<: *sim-env
+      MODE: warehouse
+      DEVID: Almacen-1
+      DEVIP: 192.168.1.158
+      DEVMAC: "3c:e4:b0:dc:dc:47"
+      MQTT_TOPIC: TAG_readings/scenario1
+      RF_PERIOD_MS: "1600"
+      TAGS_PER_CYCLE: "60"
+      ANTENNAS: "1,2,3,4"
+      EPC_SOURCE: db
+      # Todo el catalogo del almacen, recorrido en rueda: cada ventana ve el stock
+      # completo, como un lector real. /sim/retirar?epc=... simula que sale.
+      POOL_SIZE: "5000"
+      SWEEP: "true"
+      FOREIGN_RATIO: "0.05"
+      START_AUTO: "false"
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+      rfid-mosquitto:
+        condition: service_healthy
+
+  # Lector de puerta: ademas de publicar, emula el modo SQL_EAS_ALARM.
+  rfid-lector-159:
+    <<: *sim-common
+    container_name: rfid-lector-159
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.159
+    ports:
+      - "8159:80"
+    environment:
+      <<: *sim-env
+      MODE: door
+      DEVID: Puerta-1
+      DEVIP: 192.168.1.159
+      DEVMAC: "64:8c:bb:f0:b9:28"
+      MQTT_TOPIC: TAG_readings/scenario2
+      RF_PERIOD_MS: "6000"
+      TAGS_PER_CYCLE: "1"
+      ANTENNAS: "1"
+      RSSI_MIN: "-58"
+      RSSI_MAX: "-40"
+      EPC_SOURCE: env
+      EPC_LIST: "ce0028121900000000002f68,ce0028121900000000002fb0"
+      START_AUTO: "false"
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+      rfid-mosquitto:
+        condition: service_healthy
+
+  # Lector de papeleras. Arranca PARADO a proposito: processMasterDelete da
+  # de baja en EPC_master todo EPC que llegue a Bin, y Bin solo crece.
+  # Ver la nota "PENDIENTE DE REVISAR" en el README.
+  rfid-lector-205:
+    <<: *sim-common
+    container_name: rfid-lector-205
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.205
+    ports:
+      - "8205:80"
+      - "8206:3161"
+    environment:
+      <<: *sim-env
+      MODE: bin
+      DEVID: Papelera-1
+      DEVIP: 192.168.1.205
+      DEVMAC: "18:2c:65:11:a9:a6"
+      MQTT_TOPIC: TAG_readings/scenario3
+      ADVANNET_PORT: "3161"
+      RF_PERIOD_MS: "5000"
+      TAGS_PER_CYCLE: "1"
+      ANTENNAS: "1"
+      EPC_SOURCE: db
+      START_AUTO: "false"
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+      rfid-mosquitto:
+        condition: service_healthy
+
+  # --- Raspberry Pi replicada -------------------------------------------
+  # Orquestador de respaldo. El sistema lo dirige la Raspberry REAL
+  # (192.168.0.64); este solo arranca con:  docker compose --profile backup up -d
+  rfid-nodered:
+    profiles: ["backup"]
+    build:
+      context: .
+      dockerfile: docker/nodered/Dockerfile
+    container_name: rfid-nodered
+    restart: unless-stopped
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.156
+    ports:
+      - "1880:1880"
+    volumes:
+      - nodered-data:/data
+    environment:
+      TZ: ${TZ}
+    depends_on:
+      rfid-postgres:
+        condition: service_healthy
+      rfid-servicio-pg:
+        condition: service_started
+        required: false
+      rfid-lector-157:
+        condition: service_healthy
+        required: false
+      rfid-lector-158:
+        condition: service_healthy
+        required: false
+
+  # --- Visor (raspi_visor): frontend + backend en un contenedor ---------
+  rfid-visor:
+    build:
+      context: ../raspi_visor
+      dockerfile: ../rep_server/docker/visor/Dockerfile
+    container_name: rfid-visor
+    restart: unless-stopped
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.164
+    ports:
+      - "8020:8020"
+    environment:
+      TZ: ${TZ}
+      RFID_API_URL: http://192.168.1.155:3000/api
+      RFID_API_KEY: ${API_KEY}
+      CORS_ORIGINS: http://localhost:8020
+    depends_on:
+      rfid-api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/health', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 15s
+
+  # --- Monitor: nodo local con panel (sin envio a la central) -----------
+  rfid-monitor:
+    build:
+      context: ../monitor
+      dockerfile: ../rep_server/docker/monitor/Dockerfile
+      additional_contexts:
+        despliegue: ./docker/monitor
+    container_name: rfid-monitor
+    restart: unless-stopped
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.165
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/monitor/node.yaml:/etc/roomfid/node.yaml:ro
+      - monitor-data:/data
+    environment:
+      TZ: ${TZ}
+      ROOMFID_AGENTES_TOKEN: ${ROOMFID_AGENTES_TOKEN}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+
+  # --- Agente de monitorizacion de ESTA maquina (el servidor) -----------
+  # Red de host: sondea los lectores y llega a irfid y al nodo por sus IPs. Lee el
+  # disco y los contenedores del host en solo lectura.
+  rfid-monitor-agente:
+    build:
+      context: ../monitor
+      dockerfile: ../rep_server/docker/agente/Dockerfile
+    image: roomfid/agente:latest
+    container_name: rfid-monitor-agente
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: ${TZ}
+      ROOMFID_AGENTE_TOKEN: ${ROOMFID_AGENTES_TOKEN}
+    volumes:
+      - ./docker/agente/servidor.yaml:/etc/roomfid/agente.yaml:ro
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      rfid-monitor:
+        condition: service_started
+
+  # --- Solo replica: SMTP de pruebas (web en :8025) ----------------------
+  mailpit:
+    profiles: ["dev"]
+    image: axllent/mailpit:latest
+    container_name: rfid-mailpit
+    restart: unless-stopped
+    networks:
+      rfidnet:
+        ipv4_address: 192.168.1.167
+    ports:
+      - "8025:8025"

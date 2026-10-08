@@ -1,0 +1,16 @@
+# Agente de esta Raspberry (contenedor banco-monitor-agente, red de host): mide la Pi
+# y sus contenedores y, leyendo irfid /estado, los almacenes, lectores y antenas.
+installation_id: BANCO-01
+device_code: SERVIDOR-BANCO
+label: Raspberry banco (.155)
+type: raspberry
+nodo_url: http://127.0.0.1:8080
+interval_s: 15
+host_root: /host
+collectors:
+  system: true
+  disks: ["/"]
+  docker: {proyectos: [roomfid-banco]}
+  roomfid:
+    url: http://127.0.0.1:8090/estado
+    sondear_lectores: true

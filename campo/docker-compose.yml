@@ -1,0 +1,134 @@
+# RoomFID - prueba en campo, MODO SOMBRA (pensado para una Raspberry Pi arm64 en la LAN).
+#
+# Escucha el sistema real sin tocarlo:
+#   * PostgreSQL 18 PROPIO, cargado con un volcado de produccion (scripts/volcado.sh).
+#   * irfid-almacen suscrito al broker MQTT real, sin sesion persistente (no deja nada
+#     encolado en el broker) y sin espejo legacy: NO escribe en produccion.
+#   * Node-RED y el batch del sistema real siguen como estan. Sin orquestador.
+#   * Visor y monitor apuntando a los equipos reales.
+#
+# A diferencia del compose de la replica NO fija la subred 192.168.1.0/24: dentro de la
+# LAN del almacen chocaria con los equipos reales. Red de Docker por defecto.
+name: roomfid-campo
+
+volumes:
+  pgdata:
+  irfid-spool:
+  monitor-data:
+
+x-irfid-env: &irfid-env
+  TZ: ${TZ:-Europe/Madrid}
+  IRFID_PG_DSN: "host=pg port=5432 dbname=gestion_rfid user=rfidroom password=${PG_PASSWORD}"
+  IRFID_MQTT_HOST: ${SERVIDOR}
+  IRFID_MQTT_PORT: ${MQTT_PORT:-1883}
+  IRFID_MQTT_USERNAME: ${MQTT_USER}
+  IRFID_MQTT_PASSWORD: ${MQTT_PASS}
+  IRFID_MQTT_CLIENT_ID: irfid-sombra-campo
+  IRFID_MQTT_SESION_PERSISTENTE: "false"
+  IRFID_LEGACY_MIRROR: "false"
+  IRFID_LEGACY_TZ: ${TZ:-Europe/Madrid}
+  IRFID_SMTP_HOST: ""
+  IRFID_CICLOS_PARA_CIRCULANTE: ${IRFID_CICLOS_PARA_CIRCULANTE:-3}
+  IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
+  IRFID_VENTANA_MIN_S: ${IRFID_VENTANA_MIN_S:-30}
+  IRFID_VENTANA_GAP_S: ${IRFID_VENTANA_GAP_S:-20}
+  IRFID_LOG_LEVEL: ${IRFID_LOG_LEVEL:-INFO}
+
+services:
+  pg:
+    image: postgres:18
+    container_name: campo-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: postgres
+      PG_PASSWORD: ${PG_PASSWORD}
+      TZ: ${TZ:-Europe/Madrid}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+      - ./volcado:/volcado:ro
+    ports:
+      - "${PUERTO_PG:-15432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rfidroom -d gestion_rfid"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 60s
+
+  irfid-almacen:
+    build:
+      context: ../../irfid/servicio
+      dockerfile: ../../rep_server/docker/irfid/Dockerfile
+    image: roomfid/irfid:latest
+    container_name: campo-irfid-almacen
+    restart: unless-stopped
+    command: ["sh", "-c", "python -m irfid migrar && exec python -m irfid almacen"]
+    depends_on:
+      pg:
+        condition: service_healthy
+    environment:
+      <<: *irfid-env
+      IRFID_SPOOL_PATH: /data/spool/irfid-spool.sqlite3
+    volumes:
+      - irfid-spool:/data/spool
+      - ./topologia.json:/app/topologia.json:ro
+    ports:
+      - "${PUERTO_HEALTH:-8090}:8090"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8090/health', timeout=4).status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 30s
+
+  visor:
+    build:
+      context: ../../raspi_visor
+      dockerfile: ../rep_server/docker/visor/Dockerfile
+    container_name: campo-visor
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      RFID_API_URL: http://${SERVIDOR}:3000/api
+      RFID_API_KEY: ${API_KEY}
+      CORS_ORIGINS: http://localhost:8020
+    ports:
+      - "${PUERTO_VISOR:-8020}:8020"
+
+  monitor:
+    build:
+      context: ../../monitor
+      dockerfile: ../rep_server/docker/monitor/Dockerfile
+      additional_contexts:
+        despliegue: ../docker/monitor
+    container_name: campo-monitor
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      ROOMFID_AGENTES_TOKEN: ${ROOMFID_AGENTES_TOKEN}
+    volumes:
+      - ./node.yaml:/etc/roomfid/node.yaml:ro
+      - monitor-data:/data
+    ports:
+      - "${PUERTO_MONITOR:-8080}:8080"
+
+  # Agente de monitorizacion de esta Pi: red de host (sondea los lectores y llega a
+  # irfid y al nodo por los puertos publicados), disco y contenedores en solo lectura.
+  monitor-agente:
+    build:
+      context: ../../monitor
+      dockerfile: ../rep_server/docker/agente/Dockerfile
+    image: roomfid/agente:latest
+    container_name: campo-monitor-agente
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+      ROOMFID_AGENTE_TOKEN: ${ROOMFID_AGENTES_TOKEN}
+    volumes:
+      - ./agente.yaml:/etc/roomfid/agente.yaml:ro
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -1,0 +1,4 @@
+volcado/*.sql
+volcado/*.tmp
+.env
+mosquitto/passwd

@@ -1,0 +1,67 @@
+{
+  "_comentario": "Topologia REAL para la prueba en campo. Las MAC salen de almacen_mqtt/config/app.json de produccion y las IP de los flows de Node-RED. Si un lector publica con otra MAC, aparece en /health -> lectores_desconocidos: corregir aqui y reiniciar (scripts/arrancar.sh).",
+  "instalacion": {
+    "codigo": "ALMACEN-1",
+    "nombre": "Almacén 1 (prueba en sombra)"
+  },
+  "ubicaciones": [
+    {
+      "codigo": "Puerta-1",
+      "tipo": "puerta",
+      "nombre": "Puerta almacén 1"
+    },
+    {
+      "codigo": "Almacen-1",
+      "tipo": "almacen",
+      "nombre": "Almacén 1",
+      "puerta": "Puerta-1"
+    },
+    {
+      "codigo": "Quirofano-1",
+      "tipo": "quirofano",
+      "nombre": "Quirófano 1",
+      "almacen": "Almacen-1"
+    },
+    {
+      "codigo": "Papelera-1",
+      "tipo": "papelera",
+      "nombre": "Papelera 1 (salida Quirófano 1)",
+      "almacen": "Almacen-1",
+      "quirofano": "Quirofano-1"
+    }
+  ],
+  "lectores": [
+    {
+      "devmac": "3c:e4:b0:dc:ca:d7",
+      "devid": "Almacen-1",
+      "devip": "192.168.1.157",
+      "ubicacion": "Almacen-1",
+      "rol": "inventario",
+      "orden_ciclo": 1
+    },
+    {
+      "devmac": "3c:e4:b0:dc:dc:47",
+      "devid": "Almacen-1",
+      "devip": "192.168.1.158",
+      "ubicacion": "Almacen-1",
+      "rol": "inventario",
+      "orden_ciclo": 2
+    },
+    {
+      "devmac": "64:8c:bb:f0:b9:28",
+      "devid": "Puerta-1",
+      "devip": "192.168.1.159",
+      "ubicacion": "Puerta-1",
+      "rol": "puerta"
+    },
+    {
+      "devmac": "18:2c:65:11:a9:a6",
+      "devid": "Papelera-1",
+      "devip": "192.168.1.205",
+      "ubicacion": "Papelera-1",
+      "rol": "papelera"
+    }
+  ],
+  "responsables": [],
+  "_topologia": "Ubicaciones: 'almacen' en papeleras y quirofanos; 'quirofano' en papeleras (un quirofano puede tener varias). Lectores: 'antenas' = antenas conectadas que se esperan (por defecto [1,2,3,4])."
+}

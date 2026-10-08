@@ -1,0 +1,53 @@
+{
+    "database": {
+        "tables": {
+            "0": {
+                "name": "EPC_readings",
+                "fields": ["devid", "devip", "devmac", "EPC", "Antenna", "RSSI", "Stock", "Tmp"]
+            },
+            "1": {
+                "name": "User_readings",
+                "fields": ["devid", "devip", "devmac", "EPC", "Antenna", "RSSI"]
+            },
+            "2": {
+                "name": "Bin",
+                "fields": ["devid", "devip", "devmac", "EPC", "Antenna", "RSSI", "patient", "operating_room"]
+            }
+        }
+    },
+    "mqtt": {
+        "defaultChannel": "TAG_readings",
+        "operationTypes": {
+            "0": "insert",
+            "1": "update",
+            "2": "both"
+        },
+        "scenarios": [
+            {
+                "id": "0",
+                "channel": "TAG_readings/scenario1",
+                "tableId": "0",
+                "operationType": "2",
+                "devmacList": ["3c:e4:b0:dc:dc:47","3c:e4:b0:dc:ca:d7"]
+            },
+            {
+                "id": "1",
+                "channel": "TAG_readings/scenario2",
+                "tableId": "1",
+                "operationType": "0",
+                "devmacList": ["64:8c:bb:f0:b9:28"]
+            },
+            {
+                "id": "2",
+                "channel": "TAG_readings/scenario3",
+                "tableId": "2",
+                "operationType": "2",
+                "devmacList": ["18:2c:65:11:a9:a6"]
+            }
+        ]
+    },
+    "logging": {
+        "level": "info",
+        "showTimestamp": true
+    }
+}      

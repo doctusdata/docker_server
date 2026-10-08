@@ -1,0 +1,22 @@
+# Monitor del banco de pruebas: la Pi (haciendo de servidor .155), sus servicios y los lectores reales.
+installation_id: BANCO-01
+name: RoomFID - banco de pruebas
+timezone: Europe/Madrid
+interval_s: 15
+node_version: 0.1.0
+listen: { host: 0.0.0.0, port: 8080 }
+
+thresholds:
+  disk_pct: { warn: 85, crit: 95 }
+  temp_c:   { warn: 70, crit: 80 }
+  cpu_pct:  { warn: 90 }
+
+agentes: {}   # token en ROOMFID_AGENTES_TOKEN (.env)
+
+devices:
+  # La Pi informa con su agente (banco-monitor-agente): su sistema y contenedores y, desde
+  # irfid, los almacenes, quirofanos, papeleras, lectores y antenas que cuelgan de ella.
+  - device_code: SERVIDOR-BANCO
+    label: Raspberry banco (.155)
+    type: raspberry
+    remoto: true

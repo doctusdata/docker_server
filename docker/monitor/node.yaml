@@ -1,0 +1,30 @@
+# Nodo de monitorizacion local de la instalacion RoomFID (compose de rep_server).
+#
+# Cada maquina tiene su AGENTE (contenedor rfid-monitor-agente / rep_server/agente) que
+# informa por POST /api/v1/agentes/informe con el token ROOMFID_AGENTES_TOKEN:
+#   * el servidor: sistema, contenedores y, leyendo irfid /estado, los almacenes,
+#     quirofanos, papeleras, lectores y antenas;
+#   * cada Raspberry: sistema, contenedores y las tablets que cuelgan de ella.
+# Aqui solo se declara que maquinas hay y donde van; lo que cuelga de ellas lo envia su agente.
+installation_id: ROOMFID-LOCAL
+name: RoomFID - Almacén
+timezone: Europe/Madrid
+interval_s: 15
+node_version: 0.1.0
+listen: { host: 0.0.0.0, port: 8080 }
+
+thresholds:
+  disk_pct: { warn: 85, crit: 95 }
+  cpu_pct:  { warn: 90 }
+  temp_c:   { warn: 70, crit: 80 }
+
+devices:
+  - device_code: SERVIDOR
+    label: Servidor RoomFID (.155)
+    type: server
+    remoto: true
+
+  - device_code: RASPBERRY-59
+    label: Raspberry de pruebas (.59)
+    type: raspberry
+    remoto: true

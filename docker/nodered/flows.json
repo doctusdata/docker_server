@@ -1,0 +1,2289 @@
+[
+    {
+        "id": "d19775192262c84c",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "443198f5e3593f48",
+        "type": "MySQLdatabase",
+        "name": "Almacen",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "db": "Almacen_hospital",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "f12220fcab5f5e7a",
+        "type": "ui_tab",
+        "name": "Dashboard RFID",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "eff0810f815e8ea0",
+        "type": "ui_group",
+        "name": "Contadores TAG",
+        "tab": "f12220fcab5f5e7a",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "187d0a3340d9485a",
+        "type": "ui_group",
+        "name": "EPC No Found",
+        "tab": "f12220fcab5f5e7a",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "c2c259813b3f183e",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "e3299d6162302dcb",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "192.168.1.155",
+        "hostFieldType": "str",
+        "port": 5432,
+        "portFieldType": "num",
+        "database": "gestion_rfid",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": 10,
+        "maxFieldType": "num",
+        "idle": 1000,
+        "idleFieldType": "num",
+        "connectionTimeout": 10000,
+        "connectionTimeoutFieldType": "num",
+        "user": "rfidroom",
+        "userFieldType": "str",
+        "password": "rfidroom@2025",
+        "passwordFieldType": "str"
+    },
+    {
+        "id": "13dffcf32bd4b1a8",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "192.168.1.155",
+        "hostFieldType": "str",
+        "port": 5432,
+        "portFieldType": "num",
+        "database": "gestion_rfid",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": 10,
+        "maxFieldType": "num",
+        "idle": 1000,
+        "idleFieldType": "num",
+        "connectionTimeout": 10000,
+        "connectionTimeoutFieldType": "num",
+        "user": "rfidroom",
+        "userFieldType": "str",
+        "password": "rfidroom@2025",
+        "passwordFieldType": "str"
+    },
+    {
+        "id": "35c0747b03aa3638",
+        "type": "ui_group",
+        "name": "EPC_Master",
+        "tab": "f12220fcab5f5e7a",
+        "order": 3,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "ceb7593e589068b8",
+        "type": "rpi-gpio out",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "pin": "17",
+        "set": false,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 1100,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "48c33fc5936c8ecb",
+        "type": "rpi-gpio out",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "pin": "18",
+        "set": false,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 1100,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "4b65bc99e0158421",
+        "type": "trigger",
+        "z": "d19775192262c84c",
+        "name": "Disparo-L2",
+        "op1": "1",
+        "op2": "1",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "min",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 2,
+        "x": 630,
+        "y": 360,
+        "wires": [
+            [
+                "10ca76be57c6181d",
+                "c4c18618bc3582c2"
+            ],
+            [
+                "dcab843bab621903",
+                "bfd2898bf7f567f6"
+            ]
+        ]
+    },
+    {
+        "id": "d38982561552918d",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "Retardo-1",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 260,
+        "wires": [
+            [
+                "4b65bc99e0158421"
+            ]
+        ]
+    },
+    {
+        "id": "dd3ecdef8c845236",
+        "type": "trigger",
+        "z": "d19775192262c84c",
+        "name": "Disparo-L1",
+        "op1": "",
+        "op2": "1",
+        "op1type": "num",
+        "op2type": "str",
+        "duration": "2",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "min",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 2,
+        "x": 630,
+        "y": 160,
+        "wires": [
+            [
+                "692d17494f9b1572",
+                "e0f63eaa6a3e4413"
+            ],
+            [
+                "00febb6cab6763d2",
+                "d38982561552918d"
+            ]
+        ]
+    },
+    {
+        "id": "a68f464403c1e110",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "name": "Timer General",
+        "props": [],
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 300,
+        "y": 160,
+        "wires": [
+            [
+                "dd3ecdef8c845236"
+            ]
+        ],
+        "info": "// Alternar entre 0 y 1\r\nif (msg.payload === 1) {\r\n    msg.payload = 0;\r\n} else {\r\n    msg.payload = 1;\r\n}\r\nreturn msg;\r\n"
+    },
+    {
+        "id": "f27f6d2264ae98d3",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "START Lector-1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "8dd7a5180e438e21",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1140,
+        "y": 1800,
+        "wires": []
+    },
+    {
+        "id": "6dd19eeba1dc75f0",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.205/device/start",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 830,
+        "y": 1800,
+        "wires": [
+            [
+                "8dd7a5180e438e21"
+            ]
+        ]
+    },
+    {
+        "id": "1f18febdc0b3e74d",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "null",
+        "payloadType": "json",
+        "x": 610,
+        "y": 1800,
+        "wires": [
+            [
+                "6dd19eeba1dc75f0"
+            ]
+        ]
+    },
+    {
+        "id": "262efed28dec0aec",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1140,
+        "y": 1860,
+        "wires": []
+    },
+    {
+        "id": "e01b8407ba2acfce",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.205/device/stop",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 830,
+        "y": 1860,
+        "wires": [
+            [
+                "262efed28dec0aec"
+            ]
+        ]
+    },
+    {
+        "id": "fb3ed2324c7f8200",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "null",
+        "payloadType": "json",
+        "x": 610,
+        "y": 1860,
+        "wires": [
+            [
+                "e01b8407ba2acfce"
+            ]
+        ]
+    },
+    {
+        "id": "e82f5d7aa8e88eea",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1140,
+        "y": 1920,
+        "wires": []
+    },
+    {
+        "id": "35bb3d199d83cb01",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.205:3161/device/AdvanReader-m4-160-a9a6",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 830,
+        "y": 1920,
+        "wires": [
+            [
+                "e82f5d7aa8e88eea"
+            ]
+        ]
+    },
+    {
+        "id": "aace31e53221969f",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "null",
+        "payloadType": "json",
+        "x": 610,
+        "y": 1920,
+        "wires": [
+            [
+                "35bb3d199d83cb01"
+            ]
+        ]
+    },
+    {
+        "id": "e0f63eaa6a3e4413",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.157/device/start",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 100,
+        "wires": [
+            [
+                "f27f6d2264ae98d3"
+            ]
+        ]
+    },
+    {
+        "id": "c4c18618bc3582c2",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.158/device/start",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 300,
+        "wires": [
+            [
+                "4baa8b44a4ac6ebf"
+            ]
+        ]
+    },
+    {
+        "id": "00febb6cab6763d2",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.157/device/stop",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 220,
+        "wires": [
+            [
+                "28cd2faf05e636d7"
+            ]
+        ]
+    },
+    {
+        "id": "dcab843bab621903",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.158/device/stop",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 420,
+        "wires": [
+            [
+                "1f237d8b4262023e"
+            ]
+        ]
+    },
+    {
+        "id": "4baa8b44a4ac6ebf",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "START Lector-2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "692d17494f9b1572",
+        "type": "trigger",
+        "z": "d19775192262c84c",
+        "name": "",
+        "op1": "1",
+        "op2": "0",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "5",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 860,
+        "y": 160,
+        "wires": [
+            [
+                "ceb7593e589068b8"
+            ]
+        ]
+    },
+    {
+        "id": "10ca76be57c6181d",
+        "type": "trigger",
+        "z": "d19775192262c84c",
+        "name": "",
+        "op1": "1",
+        "op2": "0",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "5",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 840,
+        "y": 360,
+        "wires": [
+            [
+                "48c33fc5936c8ecb"
+            ]
+        ]
+    },
+    {
+        "id": "28cd2faf05e636d7",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "STOP Lector-1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "1f237d8b4262023e",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "STOP Lector-2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "c9bc654f92f890c5",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "Snsor de Presencia",
+        "props": [
+            {
+                "p": "reset",
+                "v": "reset",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 1570,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b5a0ecd71bd1e5c1",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "debug 8",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1100,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "4593e85ab2261e16",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.157/device/stop",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 500,
+        "wires": [
+            [
+                "b5a0ecd71bd1e5c1"
+            ]
+        ]
+    },
+    {
+        "id": "f8eb56538b979d7c",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "Entrada Apagado",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 1580,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bfeac2d6be6009c7",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "debug 9",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1100,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "b90302e009a2c841",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.158/device/stop",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 850,
+        "y": 560,
+        "wires": [
+            [
+                "bfeac2d6be6009c7"
+            ]
+        ]
+    },
+    {
+        "id": "f896cd6ca34a66d6",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "Salida Encendido",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 480,
+        "y": 80,
+        "wires": [
+            [
+                "dd3ecdef8c845236"
+            ]
+        ]
+    },
+    {
+        "id": "13874ac367ae090b",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.158/device/stop",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 330,
+        "y": 480,
+        "wires": [
+            [
+                "5761937f895bb779"
+            ]
+        ]
+    },
+    {
+        "id": "6053ee2929f6d5e9",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.157/device/stop",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "digest",
+        "senderr": false,
+        "headers": [],
+        "x": 330,
+        "y": 420,
+        "wires": [
+            [
+                "32bad850ab09f8c5"
+            ]
+        ]
+    },
+    {
+        "id": "9ab40ca0863b0d97",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Ejecutar",
+        "payloadType": "str",
+        "x": 1600,
+        "y": 880,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8b67838d2fbaa0c1",
+        "type": "mysql",
+        "z": "d19775192262c84c",
+        "d": true,
+        "mydb": "443198f5e3593f48",
+        "name": "Stock",
+        "x": 1550,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4d201e141139c99f",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "Contar Stock",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "8d842899c4f3ae03",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "function 1",
+        "func": "msg.topic = \"SELECT COUNT(*) FROM EPC_readings WHERE Stock = 1\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 480,
+        "wires": [
+            [
+                "8b67838d2fbaa0c1"
+            ]
+        ]
+    },
+    {
+        "id": "555eee3c536926c5",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "name": "function 2",
+        "func": "// Extrae el valor de count desde el payload\nmsg.payload = msg.payload[0].count;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 960,
+        "wires": [
+            [
+                "59b3f9f96f41db7a"
+            ]
+        ]
+    },
+    {
+        "id": "59b3f9f96f41db7a",
+        "type": "ui_template",
+        "z": "d19775192262c84c",
+        "group": "eff0810f815e8ea0",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"background-color: #faf6cd; \n           border-radius: 15px; \n           padding: 20px; \n           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); \n           width: 90%; /* El ancho se adapta al 90% del contenedor padre */\n           max-width: 265px; /* Establece un ancho máximo */\n           height: auto; /* La altura se ajusta al contenido */\n           max-height: 200px; /* Limita la altura máxima */\n           text-align: center; \n           overflow: hidden;\">\n    <h3 style=\"font-family: 'Arial', sans-serif; \n               color: #333; \n               font-size: 22px; \n               margin-bottom: 10px;\">\n        Stock Total (Und)\n    </h3>\n    <p style=\"font-size: 40px; \n              color: #3498db; \n              font-weight: bold; \n              margin: 0; \n              transition: all 0.3s ease;\">\n        {{msg.payload}}\n    </p>\n    <div style=\"margin-top: 10px; \n                font-family: 'Arial', sans-serif; \n                color: #888; \n                font-size: 14px;\">\n        <span>Actualizado recientemente</span>\n    </div>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1120,
+        "y": 960,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "333ba5d5d076f1bc",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Ejecutar",
+        "payloadType": "str",
+        "x": 1600,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d6b900d1d62d898f",
+        "type": "mysql",
+        "z": "d19775192262c84c",
+        "d": true,
+        "mydb": "443198f5e3593f48",
+        "name": "Papeleras",
+        "x": 1540,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "da9f4bea824b41a8",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "Contar Usadas",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1140,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "f4d8c601dfdb493c",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "function 3",
+        "func": "msg.topic = \"SELECT COUNT(*) FROM Bin\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 540,
+        "wires": [
+            [
+                "d6b900d1d62d898f"
+            ]
+        ]
+    },
+    {
+        "id": "206216a7adc6d270",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "name": "function 4",
+        "func": "// Extrae el valor de count desde el payload\nmsg.payload = msg.payload[0].count;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1100,
+        "wires": [
+            [
+                "41987e0bd2f9abc1"
+            ]
+        ]
+    },
+    {
+        "id": "41987e0bd2f9abc1",
+        "type": "ui_template",
+        "z": "d19775192262c84c",
+        "group": "eff0810f815e8ea0",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"background-color: #d0facd; \n           border-radius: 15px; \n           padding: 20px; \n           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); \n           width: 90%; /* El ancho se adapta al 90% del contenedor padre */\n           max-width: 265px; /* Establece un ancho máximo */\n           height: auto; /* La altura se ajusta al contenido */\n           max-height: 200px; /* Limita la altura máxima */\n           text-align: center; \n           overflow: hidden;\">\n    <h3 style=\"font-family: 'Arial', sans-serif; \n               color: #333; \n               font-size: 22px; \n               margin-bottom: 10px;\">\n        Stock Consumido (Und)\n    </h3>\n    <p style=\"font-size: 40px; \n              color: #3498db; \n              font-weight: bold; \n              margin: 0; \n              transition: all 0.3s ease;\">\n        {{msg.payload}}\n    </p>\n    <div style=\"margin-top: 10px; \n                font-family: 'Arial', sans-serif; \n                color: #888; \n                font-size: 14px;\">\n        <span>Actualizado recientemente</span>\n    </div>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1120,
+        "y": 1100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1c5f0dcbb36a9928",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Ejecutar",
+        "payloadType": "str",
+        "x": 1600,
+        "y": 1160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fa5d3a8ff4a890e6",
+        "type": "mysql",
+        "z": "d19775192262c84c",
+        "d": true,
+        "mydb": "443198f5e3593f48",
+        "name": "No Found",
+        "x": 1580,
+        "y": 1420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d03bb586a59a2e65",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "No Found",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "8bfb407afc30657c",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "function 5",
+        "func": "msg.topic = \"SELECT COUNT(*) FROM EPC_readings WHERE Stock = 0\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1440,
+        "y": 1420,
+        "wires": [
+            [
+                "fa5d3a8ff4a890e6"
+            ]
+        ]
+    },
+    {
+        "id": "bbc293b4f16f45da",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "name": "function 6",
+        "func": "// Extrae el valor de count desde el payload\nmsg.payload = msg.payload[0].count;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1240,
+        "wires": [
+            [
+                "07b8411979ec404b"
+            ]
+        ]
+    },
+    {
+        "id": "07b8411979ec404b",
+        "type": "ui_template",
+        "z": "d19775192262c84c",
+        "group": "eff0810f815e8ea0",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"background-color: #facdcd; \n           border-radius: 15px; \n           padding: 20px; \n           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); \n           width: 90%; /* El ancho se adapta al 90% del contenedor padre */\n           max-width: 265px; /* Establece un ancho máximo */\n           height: auto; /* La altura se ajusta al contenido */\n           max-height: 200px; /* Limita la altura máxima */\n           text-align: center; \n           overflow: hidden;\">\n    <h3 style=\"font-family: 'Arial', sans-serif; \n               color: #333; \n               font-size: 22px; \n               margin-bottom: 10px;\">\n        Stock not found (Und)\n    </h3>\n    <p style=\"font-size: 40px; \n              color: #3498db; \n              font-weight: bold; \n              margin: 0; \n              transition: all 0.3s ease;\">\n        {{msg.payload}}\n    </p>\n    <div style=\"margin-top: 10px; \n                font-family: 'Arial', sans-serif; \n                color: #888; \n                font-size: 14px;\">\n        <span>Actualizado recientemente</span>\n    </div>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1120,
+        "y": 1240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "183df94db72218e1",
+        "type": "http request",
+        "z": "d19775192262c84c",
+        "name": "Batch Servicio_postgresql",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.163:8081/run",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1010,
+        "y": 700,
+        "wires": [
+            [
+                "87745acb90949d1b",
+                "82235720635bd31a"
+            ]
+        ]
+    },
+    {
+        "id": "e3b39543fd1bd9a5",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Ejecutar",
+        "payloadType": "str",
+        "x": 1600,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "87745acb90949d1b",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "START Servicio",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1380,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "bfd2898bf7f567f6",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 700,
+        "wires": [
+            [
+                "183df94db72218e1"
+            ]
+        ]
+    },
+    {
+        "id": "550001574a0136ab",
+        "type": "ui_template",
+        "z": "d19775192262c84c",
+        "d": true,
+        "group": "",
+        "name": "",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"background-color: #faf6cd;\n           border-radius: 15px;\n           padding: 20px;\n           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);\n           width: 90%;\n           max-width: 265px;\n           height: auto;\n           max-height: 200px;\n           text-align: center;\n           overflow: hidden;\">\n    <h3 style=\"font-family: 'Arial', sans-serif;\n               color: #333;\n               font-size: 22px;\n               margin-bottom: 10px;\">\n        {{msg.title}}\n    </h3>\n    <p style=\"font-size: 40px;\n              font-weight: bold;\n              margin: 0;\n              transition: all 0.3s ease;\n              color: {{msg.color}};\">\n        {{msg.payload}}\n    </p>\n    <div style=\"margin-top: 10px;\n                font-family: 'Arial', sans-serif;\n                color: #888;\n                font-size: 14px;\">\n        <span>{{msg.status}}</span>\n    </div>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1600,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "718128fd4eb11080",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "Borrado Usadas",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "b5fae993d2c026af",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 780,
+        "wires": [
+            [
+                "0f0741278d457a2c"
+            ]
+        ]
+    },
+    {
+        "id": "30474d5925b296f3",
+        "type": "mysql",
+        "z": "d19775192262c84c",
+        "d": true,
+        "mydb": "443198f5e3593f48",
+        "name": "Borrado",
+        "x": 1540,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "048fd873b259f0c8",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "function 7",
+        "func": "msg.topic = \"DELETE FROM EPC_readings WHERE Used = 1 AND devid = 'Almacen-1'\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 360,
+        "wires": [
+            [
+                "30474d5925b296f3"
+            ]
+        ]
+    },
+    {
+        "id": "9f21369b4ecd5d78",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Ejecutar",
+        "payloadType": "str",
+        "x": 1600,
+        "y": 1300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a8d0b777e7e83474",
+        "type": "mysql",
+        "z": "d19775192262c84c",
+        "d": true,
+        "mydb": "443198f5e3593f48",
+        "name": "No Found Table",
+        "x": 1560,
+        "y": 1480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2761146c9c11493d",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "No Found Tabla",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1140,
+        "y": 1320,
+        "wires": []
+    },
+    {
+        "id": "ab2e7530ded8c0ac",
+        "type": "ui_table",
+        "z": "d19775192262c84c",
+        "group": "187d0a3340d9485a",
+        "name": "EPC no encontrado",
+        "order": 1,
+        "width": "6",
+        "height": "10",
+        "columns": [],
+        "outputs": 0,
+        "cts": false,
+        "x": 1150,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "6fba9d46ec5d2b5d",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "name": "Puerta-1",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 660,
+        "y": 520,
+        "wires": [
+            [
+                "4593e85ab2261e16",
+                "b90302e009a2c841",
+                "e766170f172e5a4c"
+            ]
+        ]
+    },
+    {
+        "id": "f1c2e7f27d291a8c",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "name": "sensor-1",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 220,
+        "y": 320,
+        "wires": [
+            [
+                "e766170f172e5a4c",
+                "6053ee2929f6d5e9",
+                "13874ac367ae090b"
+            ]
+        ]
+    },
+    {
+        "id": "e766170f172e5a4c",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "name": "function 10",
+        "func": "// Si el mensaje entrante es 1 (pin activo), mandamos el reset al trigger\nif (msg.payload === 1) {\n    msg.reset= \"reset\";  // Este ser� el mensaje que se manda al trigger\n    return msg;\n}\nreturn null;  // Si el estado no es 1 (no activo), no se hace nada\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 220,
+        "wires": [
+            [
+                "dd3ecdef8c845236",
+                "4b65bc99e0158421"
+            ]
+        ]
+    },
+    {
+        "id": "859591398160eabf",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Ejecutar",
+        "payloadType": "str",
+        "x": 1600,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "82235720635bd31a",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 900,
+        "wires": [
+            [
+                "fc21ff830ca49202",
+                "f9ab8fa54526bb87"
+            ]
+        ]
+    },
+    {
+        "id": "fc21ff830ca49202",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 1040,
+        "wires": [
+            [
+                "f45c7847e3e6cdc1",
+                "0057f4feec9d5c90"
+            ]
+        ]
+    },
+    {
+        "id": "f45c7847e3e6cdc1",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 1180,
+        "wires": [
+            [
+                "52d16e53c9fc5526",
+                "9176bf248060195d"
+            ]
+        ]
+    },
+    {
+        "id": "9176bf248060195d",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 1320,
+        "wires": [
+            [
+                "b17f3a3bc7182db0",
+                "8bc5bd3e9a4eea15"
+            ]
+        ]
+    },
+    {
+        "id": "32bad850ab09f8c5",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "debug 16",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "5761937f895bb779",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "debug 17",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "c1de1334c626f978",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "Borrado Foraneas",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "747a96861d4b1a10",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 600,
+        "wires": [
+            [
+                "c0b902c1762c037c"
+            ]
+        ]
+    },
+    {
+        "id": "f2cb6d7845e784a2",
+        "type": "mysql",
+        "z": "d19775192262c84c",
+        "d": true,
+        "mydb": "443198f5e3593f48",
+        "name": "Borrado_Foraneas",
+        "x": 1570,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2128c327fe425395",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "function 9",
+        "func": "msg.topic = \"DELETE FROM EPC_readings WHERE EPC NOT LIKE '99%'\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 420,
+        "wires": [
+            [
+                "f2cb6d7845e784a2"
+            ]
+        ]
+    },
+    {
+        "id": "0f0741278d457a2c",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "Borrado Usadas",
+        "query": "DELETE FROM \"EPC_readings\" WHERE \"Used\" = 1 AND \"devid\" = 'Almacen-1';\n",
+        "postgreSQLConfig": "13dffcf32bd4b1a8",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 860,
+        "y": 780,
+        "wires": [
+            [
+                "718128fd4eb11080"
+            ]
+        ]
+    },
+    {
+        "id": "c0b902c1762c037c",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "Borrado Foraneas",
+        "query": "DELETE FROM \"EPC_readings\" WHERE \"EPC\" NOT LIKE '9999%' AND \"devid\" = 'Almacen-1';\n\n\n",
+        "postgreSQLConfig": "e3299d6162302dcb",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 870,
+        "y": 600,
+        "wires": [
+            [
+                "c1de1334c626f978"
+            ]
+        ]
+    },
+    {
+        "id": "f9ab8fa54526bb87",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "Stock",
+        "query": "SELECT COUNT(*) FROM \"EPC_readings\" WHERE \"Stock\" = 1 AND \"devid\" = 'Almacen-1';\n\n\n\n",
+        "postgreSQLConfig": "e3299d6162302dcb",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 850,
+        "y": 900,
+        "wires": [
+            [
+                "4d201e141139c99f",
+                "555eee3c536926c5"
+            ]
+        ]
+    },
+    {
+        "id": "0057f4feec9d5c90",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "Papeleras",
+        "query": "SELECT COUNT(*) FROM \"Bin\";\n",
+        "postgreSQLConfig": "e3299d6162302dcb",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 840,
+        "y": 1040,
+        "wires": [
+            [
+                "da9f4bea824b41a8",
+                "206216a7adc6d270"
+            ]
+        ]
+    },
+    {
+        "id": "52d16e53c9fc5526",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "No Found",
+        "query": "SELECT COUNT(*) FROM \"EPC_readings\" WHERE \"Stock\" = 0 AND \"devid\" = 'Almacen-1';\n",
+        "postgreSQLConfig": "e3299d6162302dcb",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 840,
+        "y": 1180,
+        "wires": [
+            [
+                "d03bb586a59a2e65",
+                "bbc293b4f16f45da"
+            ]
+        ]
+    },
+    {
+        "id": "b17f3a3bc7182db0",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "No Found Tabla",
+        "query": "SELECT \"EPC\" FROM \"EPC_readings\" WHERE \"Stock\" = 0 AND \"devid\" = 'Almacen-1';\n",
+        "postgreSQLConfig": "e3299d6162302dcb",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 820,
+        "y": 1320,
+        "wires": [
+            [
+                "2761146c9c11493d",
+                "33ebd49fa1c5d321"
+            ]
+        ]
+    },
+    {
+        "id": "524c26ccb896eed9",
+        "type": "inject",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "Timer General",
+        "props": [],
+        "repeat": "120",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 260,
+        "y": 620,
+        "wires": [
+            []
+        ],
+        "info": "// Alternar entre 0 y 1\r\nif (msg.payload === 1) {\r\n    msg.payload = 0;\r\n} else {\r\n    msg.payload = 1;\r\n}\r\nreturn msg;\r\n"
+    },
+    {
+        "id": "c28d7bdc685d72c9",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "function 11",
+        "func": "msg.payload = msg.payload[0]['COUNT(*)'];\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1590,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "90ba69536c84eeb1",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "d": true,
+        "name": "function 8",
+        "func": "msg.topic = \"SELECT EPC FROM EPC_readings WHERE Stock = 0\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 1480,
+        "wires": [
+            [
+                "a8d0b777e7e83474"
+            ]
+        ]
+    },
+    {
+        "id": "33ebd49fa1c5d321",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "name": "function 12",
+        "func": "msg.topic = \"SELECT EPC FROM EPC_readings WHERE Stock = 0\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 1380,
+        "wires": [
+            [
+                "ab2e7530ded8c0ac"
+            ]
+        ]
+    },
+    {
+        "id": "d1164c78a82ec75b",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "EPC Master",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 1480,
+        "wires": []
+    },
+    {
+        "id": "7649e185238d17ba",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "EPC Master",
+        "query": "SELECT COUNT(*) FROM \"EPC_master\";\n\n\n\n",
+        "postgreSQLConfig": "e3299d6162302dcb",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 850,
+        "y": 1480,
+        "wires": [
+            [
+                "d1164c78a82ec75b",
+                "54337dba2ee0a6aa"
+            ]
+        ]
+    },
+    {
+        "id": "f2e788b9eb54fb0c",
+        "type": "ui_template",
+        "z": "d19775192262c84c",
+        "group": "35c0747b03aa3638",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"background-color: #faf6cd; \n           border-radius: 15px; \n           padding: 20px; \n           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); \n           width: 90%; /* El ancho se adapta al 90% del contenedor padre */\n           max-width: 265px; /* Establece un ancho máximo */\n           height: auto; /* La altura se ajusta al contenido */\n           max-height: 200px; /* Limita la altura máxima */\n           text-align: center; \n           overflow: hidden;\">\n    <h3 style=\"font-family: 'Arial', sans-serif; \n               color: #333; \n               font-size: 22px; \n               margin-bottom: 10px;\">\n        EPC_Master Total (Und)\n    </h3>\n    <p style=\"font-size: 40px; \n              color: #3498db; \n              font-weight: bold; \n              margin: 0; \n              transition: all 0.3s ease;\">\n        {{msg.payload}}\n    </p>\n    <div style=\"margin-top: 10px; \n                font-family: 'Arial', sans-serif; \n                color: #888; \n                font-size: 14px;\">\n        <span>Actualizado recientemente</span>\n    </div>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1100,
+        "y": 1540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "54337dba2ee0a6aa",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "name": "function 13",
+        "func": "// Extrae el valor de count desde el payload\nmsg.payload = msg.payload[0].count;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 1540,
+        "wires": [
+            [
+                "f2e788b9eb54fb0c"
+            ]
+        ]
+    },
+    {
+        "id": "8bc5bd3e9a4eea15",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 620,
+        "y": 1480,
+        "wires": [
+            [
+                "7649e185238d17ba",
+                "c80fcfbe82dedcf0"
+            ]
+        ]
+    },
+    {
+        "id": "c80fcfbe82dedcf0",
+        "type": "delay",
+        "z": "d19775192262c84c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 620,
+        "y": 1600,
+        "wires": [
+            [
+                "770ab277710eab2b"
+            ]
+        ]
+    },
+    {
+        "id": "770ab277710eab2b",
+        "type": "postgresql",
+        "z": "d19775192262c84c",
+        "name": "EPC Master Almacen-1",
+        "query": "SELECT COUNT(*) FROM \"EPC_master\" WHERE \"Almacen\" = 'Almacen-1';\n\n\n\n",
+        "postgreSQLConfig": "e3299d6162302dcb",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 890,
+        "y": 1600,
+        "wires": [
+            [
+                "09abca28624216d7",
+                "9a3ead6edf3de69d"
+            ]
+        ]
+    },
+    {
+        "id": "09abca28624216d7",
+        "type": "debug",
+        "z": "d19775192262c84c",
+        "name": "EPC Master",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 1600,
+        "wires": []
+    },
+    {
+        "id": "9a3ead6edf3de69d",
+        "type": "function",
+        "z": "d19775192262c84c",
+        "name": "function 14",
+        "func": "// Extrae el valor de count desde el payload\nmsg.payload = msg.payload[0].count;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 1660,
+        "wires": [
+            [
+                "60776ae4dadbf667"
+            ]
+        ]
+    },
+    {
+        "id": "60776ae4dadbf667",
+        "type": "ui_template",
+        "z": "d19775192262c84c",
+        "group": "35c0747b03aa3638",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"background-color: #faf6cd; \n           border-radius: 15px; \n           padding: 20px; \n           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); \n           width: 90%; /* El ancho se adapta al 90% del contenedor padre */\n           max-width: 265px; /* Establece un ancho máximo */\n           height: auto; /* La altura se ajusta al contenido */\n           max-height: 200px; /* Limita la altura máxima */\n           text-align: center; \n           overflow: hidden;\">\n    <h3 style=\"font-family: 'Arial', sans-serif; \n               color: #333; \n               font-size: 22px; \n               margin-bottom: 10px;\">\n        Almacen-1 Total (Und)\n    </h3>\n    <p style=\"font-size: 40px; \n              color: #3498db; \n              font-weight: bold; \n              margin: 0; \n              transition: all 0.3s ease;\">\n        {{msg.payload}}\n    </p>\n    <div style=\"margin-top: 10px; \n                font-family: 'Arial', sans-serif; \n                color: #888; \n                font-size: 14px;\">\n        <span>Actualizado recientemente</span>\n    </div>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1100,
+        "y": 1660,
+        "wires": [
+            []
+        ]
+    }
+]

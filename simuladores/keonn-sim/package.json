@@ -1,0 +1,11 @@
+{
+  "name": "keonn-sim",
+  "version": "1.0.0",
+  "description": "Simulador de lector RFID Keonn AdvanReader (REST digest + publicacion MQTT)",
+  "main": "index.js",
+  "scripts": { "start": "node index.js" },
+  "dependencies": {
+    "mqtt": "^5.3.0",
+    "pg": "^8.11.3"
+  }
+}

@@ -1,0 +1,16 @@
+# Agente de esta Raspberry (contenedor campo-monitor-agente, red de host): mide la Pi
+# y sus contenedores y, leyendo irfid /estado, los almacenes, lectores y antenas.
+installation_id: ALMACEN-1-CAMPO
+device_code: PI-SOMBRA
+label: Raspberry sombra
+type: raspberry
+nodo_url: http://127.0.0.1:8080
+interval_s: 15
+host_root: /host
+collectors:
+  system: true
+  disks: ["/"]
+  docker: {proyectos: [roomfid-campo]}
+  roomfid:
+    url: http://127.0.0.1:8090/estado
+    sondear_lectores: true
