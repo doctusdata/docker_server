@@ -45,7 +45,11 @@
       "devip": "192.168.1.158",
       "ubicacion": "Almacen-1",
       "rol": "inventario",
-      "orden_ciclo": 2
+      "orden_ciclo": 2,
+      "antenas": [
+        1,
+        2
+      ]
     },
     {
       "devmac": "64:8c:bb:f0:b9:28",

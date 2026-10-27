@@ -153,6 +153,10 @@ services:
       TZ: ${TZ:-Europe/Madrid}
       RFID_API_URL: http://api:3000/api
       RFID_API_KEY: ${API_KEY}
+      # Segunda fuente: el estado de los lectores y el stock por almacen salen de irfid,
+      # no de la API heredada, que no sabe nada de eso. Por nombre de servicio, no por
+      # 127.0.0.1: dentro de este contenedor eso seria el visor mismo.
+      ALMACEN_API_URL: http://irfid-almacen:8090
       CORS_ORIGINS: http://localhost:8020
     ports:
       - "8020:8020"

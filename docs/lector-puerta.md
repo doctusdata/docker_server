@@ -115,3 +115,51 @@ carnets ya están en `user_room`. Falta dar de alta el lector con `rol='puerta'`
 Este documento las lleva en claro porque así vienen en el PDF original y hacen falta para
 configurar el aparato. Son las mismas del sistema de producción: tratar el fichero en
 consecuencia.
+
+---
+
+# El mismo aparato como papelera
+
+Decidido el 23/10 en la sala: este lector (`AdvanReader-m1-70-b928`, MAC
+`64:8c:bb:f0:b9:28`) se usa como **papelera**, no como puerta. Con uno solo hay que
+elegir, y la papelera es lo que se quiere enseñar.
+
+## Configuración objetivo
+
+| Parámetro | Valor | Por qué |
+|---|---|---|
+| IP | `192.168.1.159/24`, gw `192.168.1.1` | La red de la sala |
+| Modo dispositivo | `Autonomous` | Papelera, no puerta |
+| Modo lectura | `AUTONOMOUS` | Idem |
+| **Filtro EPC** | **vacío** | **Lo más fácil de olvidar.** Con `0xce002812` solo lee carnets (`ce0028…`) y **no ve el material**: como papelera sería inútil |
+| Potencia antena | **15** | Los 5 de fábrica no alcanzan |
+| Sensibilidad | **−70 dBm** | Con −40 solo leía etiquetas pegadas |
+| Alarma / JDBC | desactivada | Era del rol de puerta |
+
+El respaldo del 5/10 guarda los valores **de fábrica** de antena (`power 5`,
+sensibilidad `-40`). Si se restaura desde él, hay que volver a subirlos a 15 y −70 a
+mano.
+
+## No necesita MQTT
+
+Como papelera, este lector **no publica en el broker**. El terminal papelerIA habla con
+él por AdvanNet y REST, y es el terminal quien manda las sesiones al servidor por HTTP
+firmado con HMAC. Así que el problema del `MQTTService` que afectó a los lectores de
+inventario (ver `docs/lectores-mqtt.md`) **no le afecta**.
+
+## Lo que necesita el terminal
+
+En `/etc/papeleria/papeleria.env`:
+
+```
+PAPELERIA_API_URL=http://192.168.1.155:8092/api/papelera/v1
+```
+
+Encuentra el lector por MAC; si no, indicárselo con
+`PAPELERIA_READER_HOST=192.168.1.159`. Su configuración también se abre con
+**Ctrl+Shift+S** desde el teclado USB.
+
+El servidor ya está preparado: la API responde `401` sin firma en
+`:8092/api/papelera/v1`, y `traza.dispositivo` tiene `papelera-1` activo con su secreto.
+Había 6 sesiones registradas de pruebas anteriores, así que el circuito completo ya
+funcionó alguna vez.
