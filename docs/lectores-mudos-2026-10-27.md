@@ -145,3 +145,41 @@ una sola antena, para cruzarla con `traza.elemento`.
   **intentar bajarlos** más adelante. Con sombras medidas de 312 s, el margen es estrecho.
 - **Pausa por presencia**: escrita y probada (`presencia_carnet`, apagada por defecto),
   sin desplegar. El ciclo ya pasa de forma continua, que era la otra mitad de lo pedido.
+
+---
+
+## Nota aparte: la API no pide Bearer, y dentro de la red no pide nada
+
+Comprobado el 27/10 encadenando las tres peticiones desde un portátil de la red:
+
+```
+GET /api/config                      -> HTTP 200, devuelve la apiKey completa
+GET /api/epc-master  (sin cabecera)  -> HTTP 401
+GET /api/epc-master  (con esa clave) -> HTTP 200
+```
+
+La autenticación es `x-api-key`, **no** Bearer. Las cinco rutas de datos
+(`epc-master`, `epc-readings`, `user-readings`, `user-room`, `bin`) la exigen, pero
+`/api/config` (`gestion-rfid-api/src/index.js:55`) es la única sin `validateApiKey` y
+**reparte la clave** a quien la pida. Su control es que la IP del cliente empiece por
+`192.168.`, `10.` o `172.16.`, o sea cualquiera enchufado a la red de la instalación.
+
+Existe por un motivo, no por descuido: el comentario dice *«solo para el cliente web»*, y
+la página de la API necesita la clave desde el navegador. El problema es el cómo.
+
+**Lo que sí protege:** no hay `trust proxy`, así que `req.ip` es la IP real de la conexión
+y **no se puede falsear** con un `X-Forwarded-For`. Una IP pública se lleva un 403.
+
+**Decidido dejarlo así de momento:** la API es de solo lectura, el miércoles no depende de
+ella, y tocar ahora la web que sirve es más riesgo que beneficio. Queda asumido que dentro
+de la red la protección es decorativa.
+
+> **La condición que lo rompería:** si el 3000 se abre por **redirección de puertos en el
+> router** o se pone detrás de un proxy, las peticiones llegarían con la IP privada del
+> router como origen, la comprobación las daría por locales y la clave saldría a internet.
+> Mientras se llegue directo a la máquina, no pasa. Conviene confirmar que la redirección
+> que se abrió para el 3000 está quitada.
+
+Para cuando se arregle: lo pequeño es limitar la comprobación a `127.0.0.1`; lo bueno es
+que el servidor inyecte la clave en la página y la ruta no exista. Las dos obligan a
+**rotar la clave**, que además está en claro en `banco/api/app.json`.
