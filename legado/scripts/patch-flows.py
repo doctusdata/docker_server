@@ -8,7 +8,11 @@ Solo dos sustituciones, porque no hay hardware detras:
 
 Todo lo demas se deja exactamente como lo entrego el cliente.
 """
-import json, sys, shutil
+import json, os, sys, shutil
+
+# Las rutas son relativas a legado/, como en deploy-pi.sh: asi da igual
+# desde donde se lance.
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 PATH = 'docker/nodered/flows.json'
 BATCH_URL = 'http://192.168.1.163:8081/run'

@@ -16,7 +16,10 @@ esta máquina (192.168.0.4).
 ```
 
 Material de referencia original en `RoomFID Máquina/` (entrega del cliente,
-**no se modifica**). Los servicios de `servicios/` son copias editables.
+**no se modifica**). El código del sistema antiguo (copias editables de los
+servicios Node, los flows de Node-RED y sus Dockerfiles y scripts) está en
+`legado/`: solo lo usan la API de la réplica y los perfiles `legacy` y `backup`.
+El banco y el clon no lo necesitan.
 
 ## Arranque
 
@@ -90,18 +93,18 @@ Qué alarma y cómo provocar averías en el simulador: [agente/README.md](agente
 
 ## La Raspberry real
 
-`raspberry/flows.json` es el flow de la entrega reapuntado a esta máquina
+`legado/raspberry/flows.json` es el flow de la entrega reapuntado a esta máquina
 (14 sustituciones: URLs de lectores, las dos conexiones PostgreSQL y el batch).
 **Los nodos `rpi-gpio` se conservan**: en la Pi real sí hay GPIO, al contrario
 que en el contenedor.
 
 ```bash
-./scripts/make-pi-flows.py          # regenera el flow desde la entrega
-./scripts/deploy-pi.sh <usuario>    # lo despliega en la Pi
+python3 legado/scripts/make-pi-flows.py   # regenera el flow desde la entrega
+./legado/scripts/deploy-pi.sh <usuario>   # lo despliega en la Pi
 ```
 
 `deploy-pi.sh` **hace copia de seguridad antes de sustituir nada** (en
-`raspberry/backup-<fecha>/` y en `/tmp` de la propia Pi), para y arranca
+`legado/raspberry/backup-<fecha>/` y en `/tmp` de la propia Pi), para y arranca
 Node-RED, y comprueba que estén instalados los 5 módulos necesarios. Al
 terminar imprime el comando exacto para revertir.
 
@@ -113,7 +116,7 @@ terminar imprime el comando exacto para revertir.
 
 ```bash
 ./scripts/lector.sh 157 start      # enciende un lector (start|stop|status)
-./scripts/run-batch.sh             # ejecuta los 7 procesos batch
+./legado/scripts/run-batch.sh      # ejecuta los 7 procesos batch
 ./scripts/psql.sh -c 'SELECT count(*) FROM "EPC_readings";'
 ./scripts/snapshot.sh              # guarda un volcado antes de experimentar
 ./scripts/gen-mosquitto-passwd.sh  # regenera el fichero de passwords MQTT
@@ -131,7 +134,7 @@ Solo lo imprescindible por no haber hardware. Todo lo demás es la entrega tal c
 1. **`exec ssh` → HTTP.** Node-RED lanzaba el batch con
    `ssh rfidroom@192.168.1.155 "node /opt/Servicio_postgresql/index.js"`.
    Se sustituye por una llamada a `http://192.168.1.163:8081/run`, servida por
-   `servicios/servicio_postgresql/server.js` (fichero **nuevo**). El `index.js`
+   `legado/servicios/servicio_postgresql/server.js` (fichero **nuevo**). El `index.js`
    original no se toca: sigue siendo el one-shot, y cada llamada es un proceso
    nuevo, igual que el SSH.
 2. **`rpi-gpio in` → `inject`.** No hay GPIO en un contenedor. Los dos nodos de
@@ -147,8 +150,8 @@ Solo lo imprescindible por no haber hardware. Todo lo demás es la entrega tal c
    `${window.location.origin}/api`. Además de funcionar desde cualquier origen,
    evita que el CSP de helmet bloquee las llamadas.
 
-El script `scripts/patch-flows.py` aplica 1 y 2 de forma reproducible.
-`docker/nodered/flows.json.orig` conserva el flow sin parchear.
+El script `legado/scripts/patch-flows.py` aplica 1 y 2 de forma reproducible.
+`legado/docker/nodered/flows.json.orig` conserva el flow sin parchear.
 
 ## Verificado end-to-end
 

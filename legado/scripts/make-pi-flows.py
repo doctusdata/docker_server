@@ -9,9 +9,13 @@ la subred interna 192.168.1.0/24, de ahi la traduccion.
 A diferencia del flow del contenedor, aqui SI hay GPIO real: los nodos
 rpi-gpio se conservan intactos.
 """
-import json, re
+import json, os, re
 
-SRC = 'RoomFID Máquina/Raspberry PI4B2GB/Node-Red/flows(json).json'
+# Las rutas son relativas a legado/, como en deploy-pi.sh: asi da igual
+# desde donde se lance.
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+
+SRC = '../RoomFID Máquina/Raspberry PI4B2GB/Node-Red/flows(json).json'
 DST = 'raspberry/flows.json'
 HOST = '192.168.0.4'
 

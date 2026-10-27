@@ -148,7 +148,7 @@ services:
 
   rfid-api:
     build:
-      context: .
+      context: ./legado
       dockerfile: docker/api/Dockerfile
     container_name: rfid-api
     restart: unless-stopped
@@ -206,7 +206,7 @@ services:
   rfid-almacen-mqtt:
     profiles: ["legacy"]
     build:
-      context: .
+      context: ./legado
       dockerfile: docker/almacen-mqtt/Dockerfile
     container_name: rfid-almacen-mqtt
     restart: unless-stopped
@@ -225,7 +225,7 @@ services:
   rfid-servicio-pg:
     profiles: ["legacy"]
     build:
-      context: .
+      context: ./legado
       dockerfile: docker/servicio-pg/Dockerfile
     container_name: rfid-servicio-pg
     restart: unless-stopped
@@ -376,7 +376,7 @@ services:
   rfid-nodered:
     profiles: ["backup"]
     build:
-      context: .
+      context: ./legado
       dockerfile: docker/nodered/Dockerfile
     container_name: rfid-nodered
     restart: unless-stopped
