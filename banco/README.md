@@ -6,8 +6,15 @@ lectores reales, ya con el sistema nuevo:
 - Los lectores publican en su Mosquitto (`:1883`, mismo usuario y clave).
 - El lector de puerta consulta `user_room` en su PostgreSQL (`:5432`, `rfidroom`, clave en md5).
 - El **orquestador** enciende y apaga los lectores en lugar de Node-RED.
-- **irfid** calcula la trazabilidad y escribe el espejo en las tablas de siempre, que la
-  API (`:3000`) y el visor leen como hasta ahora.
+- **irfid** calcula la trazabilidad y la sincroniza con la plataforma de gestión, que es
+  la única fuente del catálogo y de los estados.
+
+> **Esto cambió.** Hasta la sincronización, irfid escribía además un espejo en las
+> tablas legacy (`EPC_master`, `EPC_readings`, `Bin`) para que la API (`:3000`) y el
+> visor las leyeran. **El espejo está retirado**: con el vocabulario de gestión
+> escribiría una semántica que ya no existe, y `IRFID_LEGACY_MIRROR=true` ahora impide
+> arrancar. Las tablas siguen ahí con lo que tenían —el visor y la API las leen—, pero
+> su contenido quedó congelado en el momento del corte.
 - Las alertas llegan a Mailpit (`:8025`).
 
 El servidor y la Raspberry originales **no se tocan**: ni se apagan ni se configuran.
