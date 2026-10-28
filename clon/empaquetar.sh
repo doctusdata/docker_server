@@ -85,7 +85,11 @@ if [ -n "$ORIGEN" ]; then
         aviso "  no se pudo leer el recuento del origen; la instalacion no podra compararlo"
     fi
 else
-    echo "== Sin datos: la Pi creara el esquema vacio =="
+    # **Este es el camino normal desde el enfoque C.** Una Pi nueva no necesita el
+    # inventario de otra: lo pide a la gestion al vincularse, y asi no arrastra el
+    # esquema legacy ni los datos de otro hospital. `--desde` queda para mudar una
+    # instalacion que ya estaba funcionando con el sistema antiguo.
+    echo "== Sin volcado: la Pi arrancara vacia y pedira su inventario a la gestion =="
 fi
 
 # --- 4. Empaquetar ------------------------------------------------------------------
@@ -94,6 +98,11 @@ tar -C "$TRABAJO" -czf "$SALIDA" roomfid-pi
 echo
 verde "Paquete: $SALIDA  ($(du -h "$SALIDA" | cut -f1))"
 echo
+if [ -z "$ORIGEN" ]; then
+    echo "Recuerda: tras instalar hay que vincular la Pi con la gestion."
+    echo "El propio instalar.sh explica como."
+    echo
+fi
 echo "En la Raspberry nueva:"
 echo "  scp $(basename "$SALIDA") andy@IP:~/"
 echo "  ssh andy@IP 'tar xzf $(basename "$SALIDA") && cd roomfid-pi && ./instalar.sh'"
