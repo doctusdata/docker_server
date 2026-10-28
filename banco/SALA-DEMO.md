@@ -21,7 +21,26 @@ grep -i LEGACY_MIRROR .env             # si está a true, el servicio ya no arra
 El código tiene que ser el de la rama `sincronizacion-c` en los tres repositorios
 (`gestion`, `irfid`, `rep_server`).
 
-### Construir y llevar las imágenes (desde el Mac)
+### Dos formas de llevarlo a la Pi, y la de siempre sigue valiendo
+
+| | Dónde se compila | Cuándo usarla |
+|---|---|---|
+| **`banco/`** | **en la propia Pi** (`docker compose build`) | lo que hacéis normalmente: la Pi tiene el código y se construye allí |
+| `clon/` | en el Mac, la Pi solo carga | cuando no se quiere compilar en la Pi, o para una Pi nueva sin código |
+
+**Si instaláis directamente en la Pi como siempre, no hace falta el Mac para nada:**
+
+```bash
+# en la Pi, con el código actualizado a la rama sincronizacion-c
+cd ~/roomfid
+./scripts/construir.sh        # 15-30 min la primera vez; necesita internet
+./scripts/empezar-de-cero.sh  # borra traza, aplica sql/010..020, arranca
+```
+
+`construir.sh` necesita internet (descarga las imágenes base). Después, arrancar y
+operar funciona sin conexión.
+
+### Construir las imágenes en el Mac (la otra forma)
 
 La Pi solo ejecuta: no compila. Las imágenes se construyen aquí y allí solo se
 cargan. **En un Mac con Apple Silicon esto es nativo**, no emulado, así que tarda
@@ -133,7 +152,40 @@ docker compose exec -T pg psql -U rfidroom -d gestion_rfid -c \
 Y en gestión: la etiqueta `usado`/`retirado` con su movimiento de consumo, con el
 paciente y la incidencia.
 
-## 6. Los tests que nadie ha ejecutado todavía
+## 6. La gestión no va a estar siempre encendida
+
+**Sí hace falta, pero solo una vez: al instalar.** La Pi arranca vacía y su
+inventario no se copia de ningún sitio — lo pide a gestión al vincularse. Sin esa
+primera bajada no tiene nada, y **todo lo que lea acabará en `epc_desconocido`**:
+el almacén aparecerá vacío aunque esté lleno.
+
+A partir de ahí es autónoma. Es la decisión del 26/10: *sin red guarda y sincroniza
+en cuanto puede, misma política siempre*.
+
+| Con la gestión apagada | |
+|---|---|
+| Ciclos de inventario | funciona |
+| Papelera (consumo y retirada) | funciona |
+| Trazabilidad y movimientos | funciona |
+| Alertas por correo | funciona |
+| Visor | funciona |
+| Material **nuevo** dado de alta en gestión | no llega hasta que vuelva |
+| Consumos hacia gestión | se acumulan en cola y se entregan al reconectar |
+
+**Antes de dejar la sala, comprueba que puede sobrevivir sola:**
+
+```bash
+./scripts/verificar-sincronizacion.sh --demo
+```
+
+Dice si tiene inventario bajado —lo único imprescindible— y cuántos consumos y
+ciclos quedan por entregar cuando vuelva a haber gestión.
+
+> Si ves `local_pendiente` creciendo con la gestión apagada, **es normal**: son los
+> hechos que la Pi ha decidido y aún no ha podido contar. El script distingue ese
+> caso del que sí es un problema (marcas sin nada en la cola).
+
+## 7. Los tests que nadie ha ejecutado todavía
 
 **219 tests de integración.** Es lo que más conviene correr aquí, porque cubren
 justo lo que no se puede probar a ojo: la reconstrucción del ENUM, la regla de
@@ -161,7 +213,8 @@ cd backend && TEST_DATABASE_URL=postgresql+psycopg://rfidroom:<pass>@127.0.0.1:5
 | La Pi no recibe nada | `traza.gestion.ultimo_error`, y `/health` → `bajada` |
 | Llegan etiquetas sin nombre | la vista `v_etiqueta_sync` de gestión no resuelve el arco |
 | Rechazos `estado_desconocido` | falta aplicar `sql/018`: el ENUM sigue con el vocabulario viejo |
-| `local_pendiente` crece y no baja | el canal de subida no entrega. **Es una fuga real**: esos elementos se quedan sordos al estado de gestión |
+| `local_pendiente` crece y no baja | **con gestión apagada es normal**: son hechos decididos y aún no contados. Con gestión encendida es una fuga real, y esos elementos se quedan sordos a su estado. `verificar-sincronizacion.sh` distingue los dos casos |
+| El almacén aparece vacío aunque esté lleno | la Pi no tiene inventario: falta la primera bajada. `verificar-sincronizacion.sh --demo` |
 | Cola `agotado` en `envio_gestion` | casi siempre el token o el `store_id` |
 | `rechazado` en `envio_estado` | gestión no conoce esas etiquetas. No se reintenta a propósito |
 | El orquestador en 503 | **esperable.** Los lectores están en otra red |

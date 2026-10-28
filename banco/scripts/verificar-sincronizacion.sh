@@ -9,6 +9,7 @@
 #
 #   verificar-sincronizacion.sh            todo
 #   verificar-sincronizacion.sh --esquema  solo que las migraciones esten aplicadas
+#   verificar-sincronizacion.sh --demo     ¿puede esta Pi funcionar SIN la gestion?
 set -u
 . "$(dirname "$0")/_comun.sh"
 
@@ -195,6 +196,41 @@ else
     done
 fi
 printf '  %s·%s el orquestador en 503 es ESPERABLE: los lectores estan en otra red%s\n' "$g" "$g" "$n"
+
+# --- 8. ¿Puede funcionar sola? ---------------------------------------------------------
+# La pregunta de la demo: la gestion no va a estar siempre encendida.
+titulo "Autonomia: ¿aguanta sin la gestion?"
+
+# Lo unico imprescindible es tener el inventario bajado. Sin el, todo lo que se lea
+# cae en epc_desconocido y el almacen aparece vacio.
+inventario=$(psql "SELECT count(*) FROM traza.elemento
+                    WHERE gestion_etiqueta_id IS NOT NULL AND baja_at IS NULL")
+if [ "${inventario:-0}" = "0" ]; then
+    printf '  %s✗%s sin inventario: esta Pi NO puede funcionar sola todavia\n' "$r" "$n"
+    printf '      %s→ Con la gestion encendida, da de alta el material y espera a que baje.%s\n' "$a" "$n"
+    printf '      %s  Hasta entonces, todo lo que lea ira a epc_desconocido.%s\n' "$a" "$n"
+    MAL=$((MAL+1))
+else
+    printf '  %s✓%s %s unidades en inventario: puede leer y decidir sin la gestion\n' "$v" "$n" "$inventario"
+    OK=$((OK+1))
+fi
+
+comprobar "la topologia tiene lectores de inventario" \
+    "SELECT count(*) > 0 FROM traza.lector WHERE rol = 'inventario'" t \
+    "sin lectores en topologia.json no hay ciclos que cerrar"
+
+printf '\n  %sLo que SIGUE funcionando con la gestion apagada:%s\n' "$g" "$n"
+printf '  %s  ciclos de inventario · papelera · trazabilidad · alertas por correo · visor%s\n' "$g" "$n"
+printf '  %sLo que NO, y es esperable:%s\n' "$g" "$n"
+printf '  %s  material nuevo dado de alta en la gestion no llega hasta que vuelva;%s\n' "$g" "$n"
+printf '  %s  los consumos se acumulan en la cola y se entregan al reconectar.%s\n' "$g" "$n"
+
+if [ "${1:-}" = "--demo" ]; then
+    pend=$(psql "SELECT count(*) FROM traza.envio_estado WHERE estado_envio = 'pendiente'")
+    ciclos=$(psql "SELECT count(*) FROM traza.envio_gestion WHERE estado = 'pendiente'")
+    printf '\n  %sPor entregar cuando vuelva la gestion:%s %s consumo(s), %s ciclo(s)\n' \
+        "$g" "$n" "${pend:-0}" "${ciclos:-0}"
+fi
 
 # --- Resumen --------------------------------------------------------------------------
 printf '\n%s────────────────────────────────────────%s\n' "$g" "$n"
