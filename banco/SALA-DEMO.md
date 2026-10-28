@@ -19,8 +19,33 @@ grep -i LEGACY_MIRROR .env             # si está a true, el servicio ya no arra
 ```
 
 El código tiene que ser el de la rama `sincronizacion-c` en los tres repositorios
-(`gestion`, `irfid`, `rep_server`). Si la Pi corre imágenes, hay que reconstruirlas:
-`cd clon && ./construir-arm64.sh`.
+(`gestion`, `irfid`, `rep_server`).
+
+### Construir y llevar las imágenes (desde el Mac)
+
+La Pi solo ejecuta: no compila. Las imágenes se construyen aquí y allí solo se
+cargan. **En un Mac con Apple Silicon esto es nativo**, no emulado, así que tarda
+minutos y no horas.
+
+```bash
+open -a OrbStack                      # el motor, primero: sin él nada funciona
+cd rep_server/clon
+./construir-arm64.sh                  # las cinco, arm64 nativo
+./empaquetar.sh                       # ~192 MB, SIN volcado
+scp roomfid-pi-*.tar.gz andy@IP_PI:~/
+ssh andy@IP_PI 'tar xzf roomfid-pi-*.tar.gz && cd roomfid-pi && ./instalar.sh'
+```
+
+Verificado en un M3: las cinco imágenes salen arm64 y el paquete son 192 MB.
+
+**Si dice «el builder no puede construir arm64»**, lo primero que hay que mirar es
+si el motor está arrancado — en un Mac es la causa en casi todos los casos. El
+script ya lo comprueba antes y lo dice con esas palabras.
+
+**Qué corre dónde.** Lo de `clon/` (construir, empaquetar) en el Mac; todo lo demás
+—`instalar.sh`, `empezar-de-cero.sh`, `verificar-sincronizacion.sh`,
+`simular-ciclo.sh`— **en la Pi**, porque usan `docker compose exec` contra sus
+propios contenedores.
 
 ## 1. Borrar y rehacer la Pi
 
