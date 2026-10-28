@@ -12,6 +12,16 @@ lectores reales, ya con el sistema nuevo:
 
 El servidor y la Raspberry originales **no se tocan**: ni se apagan ni se configuran.
 
+
+> **Para instalar la sincronización desde cero en la sala demo, ver
+> [SALA-DEMO.md](SALA-DEMO.md).** Es una página con el orden exacto y los tres
+> scripts nuevos:
+>
+> - `scripts/empezar-de-cero.sh` — borra el esquema `traza` y lo rehace (pide confirmación)
+> - `scripts/verificar-sincronizacion.sh` — dice pieza por pieza qué funciona y qué no
+> - `scripts/simular-ciclo.sh` — simula un ciclo por MQTT, porque los lectores de
+>   inventario están en otra red y son inalcanzables desde la sala
+
 ## Lo más importante: red aislada
 
 No puede haber dos equipos con la IP .155 en la misma red. Por eso **la prueba se hace
