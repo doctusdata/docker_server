@@ -102,7 +102,16 @@ comprobar "hay al menos un almacen con token" \
     "SELECT count(*) > 0 FROM traza.vinculacion WHERE estado='activa' AND token <> ''" t
 comprobar "cada almacen esta enlazado con la topologia local" \
     "SELECT count(*) = 0 FROM traza.vinculacion WHERE estado='activa' AND ubicacion_id IS NULL" t \
-    "la gestion dio un almacen que no esta en topologia.json: ese no se puede leer"
+    "el external_id del almacen en gestion debe coincidir con el codigo de una ubicacion de topologia.json"
+# Sin esto, el emisor de ciclos no tiene store_id que mandar: la Pi estaria
+# vinculada y aun asi no reportaria ningun inventario, que es un fallo dificil de
+# ver porque todo lo demas parece bien.
+comprobar "las ubicaciones saben a que almacen de la gestion van" \
+    "SELECT count(*) > 0 FROM traza.ubicacion WHERE gestion_store_id IS NOT NULL" t \
+    "lo escribe 'vincular' cruzando Almacen.external_id con ubicacion.codigo"
+informar "almacen de gestion por ubicacion" \
+    "SELECT coalesce(string_agg(codigo||' → '||coalesce(gestion_store_id::text,'(sin asignar)'), ', '),'(ninguna)')
+       FROM traza.ubicacion WHERE tipo = 'almacen'"
 informar "ultimo contacto" "SELECT coalesce(to_char(ultimo_contacto_at,'DD/MM HH24:MI'),'nunca') FROM traza.gestion WHERE unica"
 informar "ultimo error" "SELECT coalesce(ultimo_error,'(ninguno)') FROM traza.gestion WHERE unica"
 
