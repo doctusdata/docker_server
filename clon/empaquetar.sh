@@ -71,7 +71,7 @@ if [ -n "$ORIGEN" ]; then
         | gzip -1 > "$PAQ/datos/gestion_rfid.sql.gz"
     tam=$(du -h "$PAQ/datos/gestion_rfid.sql.gz" | cut -f1)
     # Un volcado vacio o truncado no se detecta hasta que falla la restauracion.
-    if ! zcat "$PAQ/datos/gestion_rfid.sql.gz" | grep -q "PostgreSQL database dump complete"; then
+    if ! gzip -dc "$PAQ/datos/gestion_rfid.sql.gz" | grep -q "PostgreSQL database dump complete"; then
         rojo "el volcado parece incompleto: no termina como deberia"; exit 1
     fi
     verde "  gestion_rfid.sql.gz ($tam) — volcado integro"

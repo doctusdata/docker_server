@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API RFID</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #fd0404;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .sidebar-header {
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-header h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .command-group {
+            margin-bottom: 25px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .command-group h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .command-group h3 i {
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #d90166;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+
+        .btn-warning:hover {
+            background-color: #e76f51;
+        }
+
+        /* Main content */
+        .main-content {
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .result-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .result-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-header h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .result-body {
+            padding: 0;
+            max-height: 500px;
+            overflow: auto;
+        }
+
+        .counter {
+            background-color: var(--light-color);
+            padding: 10px 20px;
+            font-weight: 500;
+            color: var(--dark-color);
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Form styles */
+        .form-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            padding: 20px;
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn-submit {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-submit:hover {
+            background-color: #3a86ff;
+        }
+
+        /* Filters */
+        .filters {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .filter-control {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+        }
+
+        .btn-filter {
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            height: 38px;
+        }
+
+        .btn-filter:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+                margin-bottom: 20px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast.show {
+            display: block;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+
+        /* Add styles for EPC Master section */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+
+        .search-container button {
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Button styles for table actions */
+        .btn-edit, .btn-delete {
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-edit {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #e76f51;
+        }
+
+        .btn-delete {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #d90166;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar with commands -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-broadcast-tower"></i> API RFID Test</h2>
+            </div>
+
+            <!-- EPC Readings Commands -->
+            <div class="command-group">
+                <h3><i class="fas fa-tags"></i> EPC Readings</h3>
+                <button id="btnConsultarStock" class="btn">
+                    <i class="fas fa-box"></i> Consultar Stock
+                </button>
+                <button id="btnConsultarStockTemporal" class="btn">
+                    <i class="fas fa-clock"></i> Consultar Stock Temporal
+                </button>
+                <button id="btnEliminarStockTemporal" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Eliminar Stock Temporal
+                </button>
+            </div>
+
+            <!-- Bin Commands -->
+            <div class="command-group">
+                <h3><i class="fas fa-archive"></i> Bin</h3>
+                <button id="btnConsultarStockConsumido" class="btn">
+                    <i class="fas fa-shopping-cart"></i> Consultar Stock Consumido
+                </button>
+                <button id="btnEliminarBin" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
+                </button>
+            </div>
+
+            <!-- User Readings Commands -->
+            <div class="command-group">
+                <h3><i class="fas fa-users"></i> User Readings</h3>
+                <button id="btnConsultarUserDoor" class="btn">
+                    <i class="fas fa-door-open"></i> Consultar Usuarios en Puertas
+                </button>
+                <button id="btnEliminarUserReadings" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
+                </button>
+            </div>
+
+            <!-- User Room Commands -->
+            <div class="command-group">
+                <h3><i class="fas fa-home"></i> User Room</h3>
+                <button id="btnConsultarUserRoom" class="btn">
+                    <i class="fas fa-list"></i> Listar Todos los Registros
+                </button>
+                <button id="btnMostrarFormUserRoom" class="btn btn-warning">
+                    <i class="fas fa-plus-circle"></i> Añadir Nuevo Registro
+                </button>
+                <button id="btnEliminarUserRoom" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
+                </button>
+            </div>
+
+            <!-- EPC Master Commands -->
+            <div class="command-group">
+                <h3><i class="fas fa-database"></i> EPC Master</h3>
+                <button id="btnConsultarEpcMaster" class="btn">
+                    <i class="fas fa-list"></i> Listar Todos los Registros
+                </button>
+                <button id="btnMostrarFormEpcMaster" class="btn btn-warning">
+                    <i class="fas fa-plus-circle"></i> Añadir Nuevo Registro
+                </button>
+                <button id="btnEliminarEpcMaster" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Eliminar Todos los Registros
+                </button>
+            </div>
+        </div>
+
+        <!-- Main content area -->
+        <div class="main-content">
+            <!-- Stock Results -->
+            <div id="stockContainer" class="result-container">
+                <div class="result-header">
+                    <h3>Stock Almacenes</h3>
+                    <div id="stockLoader" class="loader"></div>
+                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="stockDevid">Almacén (devid)</label>
+                        <input type="text" id="stockDevid" class="filter-control" placeholder="Filtrar por almacén">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockStartDate">Fecha Inicio</label>
+                        <input type="date" id="stockStartDate" class="filter-control">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockEndDate">Fecha Fin</label>
+                        <input type="date" id="stockEndDate" class="filter-control">
+                    </div>
+                    <button id="btnFiltrarStock" class="btn-filter">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+                <div class="counter" id="stockCounter">Total de registros: 0</div>
+                <div class="result-body">
+                    <table id="stockTable">
+                        <thead>
+                            <tr>
+                                <th>Almacén</th>
+                                <th>EPC</th>
+                                <th>Fecha y Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stock Temporal Results -->
+            <div id="stockTemporalContainer" class="result-container">
+                <div class="result-header">
+                    <h3>Stock Temporal Almacenes</h3>
+                    <div id="stockTemporalLoader" class="loader"></div>
+                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="stockTemporalDevid">Almacén (devid)</label>
+                        <input type="text" id="stockTemporalDevid" class="filter-control" placeholder="Filtrar por almacén">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockTemporalStartDate">Fecha Inicio</label>
+                        <input type="date" id="stockTemporalStartDate" class="filter-control">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockTemporalEndDate">Fecha Fin</label>
+                        <input type="date" id="stockTemporalEndDate" class="filter-control">
+                    </div>
+                    <button id="btnFiltrarStockTemporal" class="btn-filter">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+                <div class="counter" id="stockTemporalCounter">Total de registros: 0</div>
+                <div class="result-body">
+                    <table id="stockTemporalTable">
+                        <thead>
+                            <tr>
+                                <th>Almacén</th>
+                                <th>EPC</th>
+                                <th>Fecha y Hora</th>
+                                <th>EPC Usuario</th>
+                                <th>Hora Usuario</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stock Consumido Results -->
+            <div id="stockConsumidoContainer" class="result-container">
+                <div class="result-header">
+                    <h3>Stock Consumido Almacenes</h3>
+                    <div id="stockConsumidoLoader" class="loader"></div>
+                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="stockConsumidoDevid">Almacén (devid)</label>
+                        <input type="text" id="stockConsumidoDevid" class="filter-control" placeholder="Filtrar por almacén">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockConsumidoPatient">Paciente</label>
+                        <input type="text" id="stockConsumidoPatient" class="filter-control" placeholder="Filtrar por paciente">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockConsumidoOperatingRoom">Quirófano</label>
+                        <input type="text" id="stockConsumidoOperatingRoom" class="filter-control" placeholder="Filtrar por quirófano">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockConsumidoStartDate">Fecha Inicio</label>
+                        <input type="date" id="stockConsumidoStartDate" class="filter-control">
+                    </div>
+                    <div class="filter-group">
+                        <label for="stockConsumidoEndDate">Fecha Fin</label>
+                        <input type="date" id="stockConsumidoEndDate" class="filter-control">
+                    </div>
+                    <button id="btnFiltrarStockConsumido" class="btn-filter">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+                <div class="counter" id="stockConsumidoCounter">Total de registros: 0</div>
+                <div class="result-body">
+                    <table id="stockConsumidoTable">
+                        <thead>
+                            <tr>
+                                <th>Almacén</th>
+                                <th>EPC</th>
+                                <th>Paciente</th>
+                                <th>Quirófano</th>
+                                <th>Fecha Inicio</th>
+                                <th>Fecha Fin</th>
+                                <th>Incidencia</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Door Results -->
+            <div id="userDoorContainer" class="result-container">
+                <div class="result-header">
+                    <h3>Usuarios en Puertas</h3>
+                    <div id="userDoorLoader" class="loader"></div>
+                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="userDoorDevid">Dispositivo (devid)</label>
+                        <input type="text" id="userDoorDevid" class="filter-control" placeholder="Filtrar por dispositivo">
+                    </div>
+                    <div class="filter-group">
+                        <label for="userDoorStartDate">Fecha Inicio</label>
+                        <input type="date" id="userDoorStartDate" class="filter-control">
+                    </div>
+                    <div class="filter-group">
+                        <label for="userDoorEndDate">Fecha Fin</label>
+                        <input type="date" id="userDoorEndDate" class="filter-control">
+                    </div>
+                    <button id="btnFiltrarUserDoor" class="btn-filter">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+                <div class="counter" id="userDoorCounter">Total de registros: 0</div>
+                <div class="result-body">
+                    <table id="userDoorTable">
+                        <thead>
+                            <tr>
+                                <th>Dispositivo</th>
+                                <th>EPC</th>
+                                <th>Fecha y Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Room Results -->
+            <div id="userRoomContainer" class="result-container">
+                <div class="result-header">
+                    <h3>Registros User Room</h3>
+                    <div id="userRoomLoader" class="loader"></div>
+                </div>
+                <div class="counter" id="userRoomCounter">Total de registros: 0</div>
+                <div class="result-body">
+                    <table id="userRoomTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>EPC</th>
+                                <th>Puerta</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Room Form -->
+            <div id="userRoomFormContainer" class="form-container">
+                <h3>Añadir/Editar Registro User Room</h3>
+                <form id="userRoomForm">
+                    <input type="hidden" id="userRoomId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userRoomEpc">EPC</label>
+                            <input type="text" id="userRoomEpc" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userRoomDoor">Puerta</label>
+                            <input type="text" id="userRoomDoor" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userRoomState">Estado</label>
+                            <select id="userRoomState" class="form-control" required>
+                                <option value="1">Activo (1)</option>
+                                <option value="0">Inactivo (0)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">Guardar</button>
+                </form>
+            </div>
+
+            <!-- EPC Master Results -->
+            <div id="epcMasterContainer" class="result-container">
+                <div class="result-header">
+                    <h3>Registros EPC Master</h3>
+                    <div id="epcMasterLoader" class="loader"></div>
+                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="epcMasterSearchEpc">Buscar por EPC</label>
+                        <div class="search-container">
+                            <input type="text" id="epcMasterSearchEpc" class="filter-control" placeholder="Ingrese EPC">
+                            <button id="btnBuscarPorEpc" class="btn-filter">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label for="epcMasterSearchDesc">Buscar por Descripción</label>
+                        <div class="search-container">
+                            <input type="text" id="epcMasterSearchDesc" class="filter-control" placeholder="Ingrese descripción">
+                            <button id="btnBuscarPorDesc" class="btn-filter">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label for="epcMasterSearchAlmacen">Buscar por Almacén</label>
+                        <div class="search-container">
+                            <input type="text" id="epcMasterSearchAlmacen" class="filter-control" placeholder="Ingrese almacén">
+                            <button id="btnBuscarPorAlmacen" class="btn-filter">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="counter" id="epcMasterCounter">Total de registros: 0</div>
+                <div class="result-body">
+                    <table id="epcMasterTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>EPC</th>
+                                <th>Descripción</th>
+                                <th>Fecha y Hora</th>
+                                <th>Almacén</th>
+                                <th>F. Caducidad</th>
+                                <th>Warning</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- EPC Master Form -->
+            <div id="epcMasterFormContainer" class="form-container">
+                <h3>Añadir/Editar Registro EPC Master</h3>
+                <form id="epcMasterForm">
+                    <input type="hidden" id="epcMasterId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="epcMasterEpc">EPC</label>
+                            <input type="text" id="epcMasterEpc" class="form-control" required maxlength="24">
+                        </div>
+                        <div class="form-group">
+                            <label for="epcMasterDesc">Descripción Corta</label>
+                            <input type="text" id="epcMasterDesc" class="form-control" required maxlength="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="epcMasterAlmacen">Almacén</label>
+                            <input type="text" id="epcMasterAlmacen" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="epcMasterExpiration">Fecha Caducidad (expiration_time)</label>
+                            <input type="date" id="epcMasterExpiration" class="form-control">
+                            <small style="color:#6c757d;">La hora se toma automáticamente del sistema.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="epcMasterWarning">Warning (0/1) - Emergencia Sanitaria</label>
+                            <input type="number" id="epcMasterWarning" class="form-control" min="0" max="1" value="0">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // API Configuration
+        //const API_BASE_URL = 'http://xx.xx.xx.xx:3000/api';
+        //let API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+
+ // API Configuration
+        const API_BASE_URL = 'http://88.148.59.45:3000/api';
+        let API_KEY = 'rfid_api_2025_fEe7d6c5b4a3210987654329abcdeG98';
+
+        // Estado local de las tablas (para la delegación de eventos)
+        let epcMasterData = [];
+        let userRoomData = [];
+
+        // Valor original de expiration_time al editar (para no tocarlo si el usuario no lo modifica)
+        let epcMasterExpirationOriginal = '';
+
+     
+        // DOM Elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // EPC Readings
+            document.getElementById('btnConsultarStock').addEventListener('click', consultarStock);
+            document.getElementById('btnFiltrarStock').addEventListener('click', consultarStock);
+            document.getElementById('btnConsultarStockTemporal').addEventListener('click', consultarStockTemporal);
+            document.getElementById('btnFiltrarStockTemporal').addEventListener('click', consultarStockTemporal);
+            document.getElementById('btnEliminarStockTemporal').addEventListener('click', eliminarStockTemporal);
+            
+            // Bin
+            document.getElementById('btnConsultarStockConsumido').addEventListener('click', consultarStockConsumido);
+            document.getElementById('btnFiltrarStockConsumido').addEventListener('click', consultarStockConsumido);
+            document.getElementById('btnEliminarBin').addEventListener('click', eliminarBin);
+            
+            // User Readings
+            document.getElementById('btnConsultarUserDoor').addEventListener('click', consultarUserDoor);
+            document.getElementById('btnFiltrarUserDoor').addEventListener('click', consultarUserDoor);
+            document.getElementById('btnEliminarUserReadings').addEventListener('click', eliminarUserReadings);
+            
+            // User Room
+            document.getElementById('btnConsultarUserRoom').addEventListener('click', consultarUserRoom);
+            document.getElementById('btnMostrarFormUserRoom').addEventListener('click', mostrarFormUserRoom);
+            document.getElementById('btnEliminarUserRoom').addEventListener('click', eliminarUserRoom);
+            document.getElementById('userRoomForm').addEventListener('submit', guardarUserRoom);
+
+            // EPC Master
+            document.getElementById('btnConsultarEpcMaster').addEventListener('click', consultarEpcMaster);
+            document.getElementById('btnMostrarFormEpcMaster').addEventListener('click', mostrarFormEpcMaster);
+            document.getElementById('btnBuscarPorEpc').addEventListener('click', buscarPorEpc);
+            document.getElementById('btnBuscarPorDesc').addEventListener('click', buscarPorDesc);
+            document.getElementById('btnBuscarPorAlmacen').addEventListener('click', buscarPorAlmacen);
+            document.getElementById('epcMasterForm').addEventListener('submit', guardarEpcMaster);
+
+            // Delegación de eventos para los botones de acción de la tabla EPC Master
+            document.querySelector('#epcMasterTable tbody').addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const row = epcMasterData.find(r => String(r.id) === btn.dataset.id);
+                if (!row) return;
+                if (btn.classList.contains('btn-edit')) editarEpcMaster(row);
+                else if (btn.classList.contains('btn-delete')) eliminarEpcMaster(row.id);
+            });
+
+            // Delegación de eventos para los botones de acción de la tabla User Room
+            document.querySelector('#userRoomTable tbody').addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const row = userRoomData.find(r => String(r.id) === btn.dataset.id);
+                if (!row) return;
+                if (btn.classList.contains('btn-edit')) editarUserRoom(row);
+                else if (btn.classList.contains('btn-delete')) eliminarUserRoom(row.id);
+            });
+        });
+
+        // Helper Functions
+        function showLoader(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function hideLoader(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.className = toast.className.replace('show', '');
+            }, 3000);
+        }
+
+        function showContainer(id) {
+            const containers = document.querySelectorAll('.result-container, .form-container');
+            containers.forEach(container => {
+                container.style.display = 'none';
+            });
+            
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '-';
+            return date.toLocaleString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
+
+        // Formatea expiration_time (string tipo "YYYY-MM-DD HH:mm:ss(.ffffff)")
+        // sin depender de new Date(), que falla con el espacio en algunos navegadores
+        function formatExpirationTime(value) {
+            if (!value) return '-';
+            const str = String(value).trim();
+            if (!str) return '-';
+            // Quitar fracciones de segundo si existen
+            return str.split('.')[0];
+        }
+
+        // Etiqueta legible para el campo estado (1 = Activo, 0 = Inactivo)
+        function formatEstado(value) {
+            if (value === 1 || value === '1' || value === true) return 'Activo (1)';
+            if (value === 0 || value === '0' || value === false) return 'Inactivo (0)';
+            return '-';
+        }
+
+        // API Request Helper
+        async function apiRequest(endpoint, method = 'GET', data = null, params = {}) {
+            try {
+                let url = `${API_BASE_URL}${endpoint}`;
+                if (Object.keys(params).length > 0) {
+                    const queryParams = new URLSearchParams();
+                    for (const key in params) {
+                        if (params[key]) {
+                            queryParams.append(key, params[key]);
+                        }
+                    }
+                    url += `?${queryParams.toString()}`;
+                }
+
+                const options = {
+                    method,
+                    headers: {
+                        'x-api-key': API_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (data && (method === 'POST' || method === 'PUT')) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(url, options);
+                
+                if (!response.ok) {
+                    throw new Error(`Error en la respuesta: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error en la solicitud API:', error);
+                showToast(`Error: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // EPC Master Functions
+        async function consultarEpcMaster() {
+            showContainer('epcMasterContainer');
+            showLoader('epcMasterLoader');
+            
+            try {
+                const data = await apiRequest('/epc-master', 'GET');
+                actualizarTablaEpcMaster(data);
+            } catch (error) {
+                document.getElementById('epcMasterCounter').textContent = 'Error al cargar los datos';
+            } finally {
+                hideLoader('epcMasterLoader');
+            }
+        }
+
+        async function buscarPorEpc() {
+            const epc = document.getElementById('epcMasterSearchEpc').value.trim();
+            if (!epc) {
+                showToast('Ingrese un EPC para buscar', 'error');
+                return;
+            }
+
+            showLoader('epcMasterLoader');
+            
+            try {
+                const data = await apiRequest(`/epc-master/epc/${epc}`, 'GET');
+                actualizarTablaEpcMaster(data);
+            } catch (error) {
+                showToast('Error al buscar por EPC', 'error');
+            } finally {
+                hideLoader('epcMasterLoader');
+            }
+        }
+
+        async function buscarPorDesc() {
+            const desc = document.getElementById('epcMasterSearchDesc').value.trim();
+            if (!desc) {
+                showToast('Ingrese una descripción para buscar', 'error');
+                return;
+            }
+
+            showLoader('epcMasterLoader');
+            
+            try {
+                const data = await apiRequest(`/epc-master/description/${desc}`, 'GET');
+                actualizarTablaEpcMaster(data);
+            } catch (error) {
+                showToast('Error al buscar por descripción', 'error');
+            } finally {
+                hideLoader('epcMasterLoader');
+            }
+        }
+
+        async function buscarPorAlmacen() {
+            const almacen = document.getElementById('epcMasterSearchAlmacen').value.trim();
+            if (!almacen) {
+                showToast('Ingrese un almacén para buscar', 'error');
+                return;
+            }
+
+            showLoader('epcMasterLoader');
+            
+            try {
+                const data = await apiRequest(`/epc-master/almacen/${almacen}`, 'GET');
+                actualizarTablaEpcMaster(data);
+            } catch (error) {
+                showToast('Error al buscar por almacén', 'error');
+            } finally {
+                hideLoader('epcMasterLoader');
+            }
+        }
+
+        function actualizarTablaEpcMaster(data) {
+            epcMasterData = Array.isArray(data) ? data : [];
+            document.getElementById('epcMasterCounter').textContent = `Total de registros: ${epcMasterData.length}`;
+            
+            const tbody = document.querySelector('#epcMasterTable tbody');
+            tbody.innerHTML = '';
+            
+            epcMasterData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.epc || '-'}</td>
+                    <td>${item.short_description || '-'}</td>
+                    <td>${formatDate(item.Local_time)}</td>
+                    <td>${item.Almacen || '-'}</td>
+                    <td>${formatExpirationTime(item.expiration_time)}</td>
+                    <td>${item.Warning ?? '-'}</td>
+                    <td>
+                        <button class="btn-edit" data-id="${item.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" data-id="${item.id}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function mostrarFormEpcMaster() {
+            document.getElementById('epcMasterId').value = '';
+            document.getElementById('epcMasterEpc').value = '';
+            document.getElementById('epcMasterDesc').value = '';
+            document.getElementById('epcMasterAlmacen').value = '';
+            document.getElementById('epcMasterExpiration').value = '';
+            document.getElementById('epcMasterExpiration').required = true;
+            document.getElementById('epcMasterWarning').value = '0';
+            epcMasterExpirationOriginal = '';
+            
+            showContainer('epcMasterFormContainer');
+        }
+
+        // Hora actual del sistema en formato HH:mm:ss (local del navegador)
+        function systemTimeNow() {
+            const d = new Date();
+            const p = n => String(n).padStart(2, '0');
+            return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+
+        // Extrae solo la parte de fecha (YYYY-MM-DD) de un valor tipo
+        // "2026-08-28 11:23:01.238851", "2026-08-28T11:23:01" o "2026-08-28".
+        // Devuelve '' si no se puede extraer una fecha.
+        function datePart(value) {
+            if (!value) return '';
+            const m = String(value).trim().match(/^(\d{4}-\d{2}-\d{2})/);
+            return m ? m[1] : '';
+        }
+
+        function editarEpcMaster(item) {
+            document.getElementById('epcMasterId').value = item.id;
+            document.getElementById('epcMasterEpc').value = item.epc || '';
+            document.getElementById('epcMasterDesc').value = item.short_description || '';
+            document.getElementById('epcMasterAlmacen').value = item.Almacen || '';
+            document.getElementById('epcMasterExpiration').value = datePart(item.expiration_time);
+            document.getElementById('epcMasterExpiration').required = false;
+            document.getElementById('epcMasterWarning').value = (item.Warning === undefined || item.Warning === null) ? '0' : String(item.Warning);
+            epcMasterExpirationOriginal = item.expiration_time || '';
+            
+            showContainer('epcMasterFormContainer');
+        }
+
+        async function guardarEpcMaster(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('epcMasterId').value;
+            const epc = document.getElementById('epcMasterEpc').value;
+            const short_description = document.getElementById('epcMasterDesc').value;
+            const almacen = document.getElementById('epcMasterAlmacen').value;
+            const expirationRaw = document.getElementById('epcMasterExpiration').value;
+            const warningRaw = document.getElementById('epcMasterWarning').value;
+
+            const warning = warningRaw === '' ? 0 : parseInt(warningRaw, 10);
+            const data = { epc, short_description, almacen, warning };
+
+            if (id) {
+                // ---- MODIFICAR ----
+                // Si el usuario no tocó la fecha (o la dejó igual), se omite
+                // expiration_time para conservar el valor original en la BD.
+                // Si la cambió, se guarda la nueva fecha con la hora del sistema.
+                const originalDate = datePart(epcMasterExpirationOriginal);
+                if (expirationRaw && expirationRaw !== originalDate) {
+                    data.expiration_time = `${expirationRaw} ${systemTimeNow()}`;
+                }
+            } else {
+                // ---- INSERTAR ----
+                // Fecha obligatoria; la hora la pone el sistema.
+                if (!expirationRaw) {
+                    showToast('La fecha de caducidad (expiration_time) es obligatoria', 'error');
+                    return;
+                }
+                data.expiration_time = `${expirationRaw} ${systemTimeNow()}`;
+            }
+
+            try {
+                let response;
+                
+                if (id) {
+                    response = await apiRequest(`/epc-master/${id}`, 'PUT', data);
+                    showToast('Registro actualizado correctamente');
+                } else {
+                    response = await apiRequest('/epc-master', 'POST', data);
+                    showToast('Registro creado correctamente');
+                }
+                
+                showContainer('epcMasterContainer');
+                consultarEpcMaster();
+            } catch (error) {
+                showToast('Error al guardar el registro', 'error');
+            }
+        }
+
+        async function eliminarEpcMaster(id) {
+            if (!confirm(`¿Está seguro de eliminar el registro con ID ${id}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await apiRequest(`/epc-master/${id}`, 'DELETE');
+                showToast(response.message);
+                consultarEpcMaster();
+            } catch (error) {
+                showToast('Error al eliminar el registro', 'error');
+            }
+        }
+
+        // Stock Functions
+        async function consultarStock() {
+            showContainer('stockContainer');
+            showLoader('stockLoader');
+            
+            const devid = document.getElementById('stockDevid').value;
+            const startDate = document.getElementById('stockStartDate').value;
+            const endDate = document.getElementById('stockEndDate').value;
+            
+            try {
+                const data = await apiRequest('/epc-readings/stock', 'GET', null, {
+                    devid,
+                    startDate,
+                    endDate
+                });
+
+                // Ordenar por EPC (ascendente) antes de renderizar
+                const list = Array.isArray(data)
+                    ? data.slice().sort((a, b) => {
+                        const aE = (a.EPC || a.epc || '').toString();
+                        const bE = (b.EPC || b.epc || '').toString();
+                        return aE.localeCompare(bE, undefined, { numeric: true, sensitivity: 'base' });
+                    })
+                    : [];
+
+                document.getElementById('stockCounter').textContent = `Total de registros: ${list.length}`;
+
+                const tbody = document.querySelector('#stockTable tbody');
+                tbody.innerHTML = '';
+
+                list.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.devid}</td>
+                        <td>${item.EPC}</td>
+                        <td>${formatDate(item.Local_time)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                document.getElementById('stockCounter').textContent = 'Error al cargar los datos';
+            } finally {
+                hideLoader('stockLoader');
+            }
+        }
+
+        // Stock Temporal Functions
+        async function consultarStockTemporal() {
+            showContainer('stockTemporalContainer');
+            showLoader('stockTemporalLoader');
+            
+            const devid = document.getElementById('stockTemporalDevid').value;
+            const startDate = document.getElementById('stockTemporalStartDate').value;
+            const endDate = document.getElementById('stockTemporalEndDate').value;
+            
+            try {
+                const data = await apiRequest('/epc-readings/stock-temporal', 'GET', null, {
+                    devid,
+                    startDate,
+                    endDate
+                });
+                
+                document.getElementById('stockTemporalCounter').textContent = `Total de registros: ${data.length}`;
+                
+                const tbody = document.querySelector('#stockTemporalTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.devid}</td>
+                        <td>${item.EPC}</td>
+                        <td>${formatDate(item.Local_time)}</td>
+                        <td>${item.EPC_User || '-'}</td>
+                        <td>${formatDate(item.Time_User)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                document.getElementById('stockTemporalCounter').textContent = 'Error al cargar los datos';
+            } finally {
+                hideLoader('stockTemporalLoader');
+            }
+        }
+
+        async function eliminarStockTemporal() {
+            if (!confirm('¿Está seguro de eliminar todos los registros de stock temporal?')) {
+                return;
+            }
+            
+            try {
+                const response = await apiRequest('/epc-readings/stock-temporal', 'DELETE');
+                showToast(response.message);
+                consultarStockTemporal();
+            } catch (error) {
+                showToast('Error al eliminar los registros', 'error');
+            }
+        }
+
+        // Stock Consumido Functions
+        async function consultarStockConsumido() {
+            showContainer('stockConsumidoContainer');
+            showLoader('stockConsumidoLoader');
+            
+            const devid = document.getElementById('stockConsumidoDevid').value;
+            const patient = document.getElementById('stockConsumidoPatient').value;
+            const operating_room = document.getElementById('stockConsumidoOperatingRoom').value;
+            const startDate = document.getElementById('stockConsumidoStartDate').value;
+            const endDate = document.getElementById('stockConsumidoEndDate').value;
+            
+            try {
+                const data = await apiRequest('/bin/stock-consumption', 'GET', null, {
+                    devid,
+                    patient,
+                    operating_room,
+                    startDate,
+                    endDate
+                });
+                
+                document.getElementById('stockConsumidoCounter').textContent = `Total de registros: ${data.length}`;
+                
+                const tbody = document.querySelector('#stockConsumidoTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.devid || '-'}</td>
+                        <td>${item.EPC || '-'}</td>
+                        <td>${item.patient || '-'}</td>
+                        <td>${item.operating_room || '-'}</td>
+                        <td>${item.start_time ? formatDate(item.start_time) : '-'}</td>
+                        <td>${item.end_time ? formatDate(item.end_time) : '-'}</td>
+                        <td>${item.incidence || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                document.getElementById('stockConsumidoCounter').textContent = 'Error al cargar los datos';
+                console.error('Error en consultarStockConsumido:', error);
+            } finally {
+                hideLoader('stockConsumidoLoader');
+            }
+        }
+
+        async function eliminarBin() {
+            if (!confirm('¿Está seguro de eliminar todos los registros del bin?')) {
+                return;
+            }
+            
+            try {
+                const response = await apiRequest('/bin', 'DELETE');
+                showToast(response.message);
+                consultarStockConsumido();
+            } catch (error) {
+                showToast('Error al eliminar los registros', 'error');
+            }
+        }
+
+        // User Door Functions
+        async function consultarUserDoor() {
+            showContainer('userDoorContainer');
+            showLoader('userDoorLoader');
+            
+            const devid = document.getElementById('userDoorDevid').value;
+            const startDate = document.getElementById('userDoorStartDate').value;
+            const endDate = document.getElementById('userDoorEndDate').value;
+            
+            try {
+                const data = await apiRequest('/user-readings/user-door', 'GET', null, {
+                    devid,
+                    startDate,
+                    endDate
+                });
+                
+                document.getElementById('userDoorCounter').textContent = `Total de registros: ${data.length}`;
+                
+                const tbody = document.querySelector('#userDoorTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.devid}</td>
+                        <td>${item.EPC}</td>
+                        <td>${formatDate(item.Local_time)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                document.getElementById('userDoorCounter').textContent = 'Error al cargar los datos';
+            } finally {
+                hideLoader('userDoorLoader');
+            }
+        }
+
+        async function eliminarUserReadings() {
+            if (!confirm('¿Está seguro de eliminar todos los registros de lecturas de usuarios?')) {
+                return;
+            }
+            
+            try {
+                const response = await apiRequest('/user-readings', 'DELETE');
+                showToast(response.message);
+                consultarUserDoor();
+            } catch (error) {
+                showToast('Error al eliminar los registros', 'error');
+            }
+        }
+
+        // User Room Functions
+        async function consultarUserRoom() {
+            showContainer('userRoomContainer');
+            showLoader('userRoomLoader');
+            
+            try {
+                const data = await apiRequest('/user-room', 'GET');
+                actualizarTablaUserRoom(data);
+            } catch (error) {
+                document.getElementById('userRoomCounter').textContent = 'Error al cargar los datos';
+            } finally {
+                hideLoader('userRoomLoader');
+            }
+        }
+
+        function actualizarTablaUserRoom(data) {
+            userRoomData = Array.isArray(data) ? data : [];
+            document.getElementById('userRoomCounter').textContent = `Total de registros: ${userRoomData.length}`;
+            
+            const tbody = document.querySelector('#userRoomTable tbody');
+            tbody.innerHTML = '';
+            
+            userRoomData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.id || '-'}</td>
+                    <td>${item.epc || '-'}</td>
+                    <td>${item.door || '-'}</td>
+                    <td>${formatEstado(item.state)}</td>
+                    <td>
+                        <button class="btn-edit" data-id="${item.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" data-id="${item.id}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function mostrarFormUserRoom() {
+            document.getElementById('userRoomId').value = '';
+            document.getElementById('userRoomEpc').value = '';
+            document.getElementById('userRoomDoor').value = '';
+            document.getElementById('userRoomState').value = '0';
+            
+            showContainer('userRoomFormContainer');
+        }
+
+        function editarUserRoom(item) {
+            document.getElementById('userRoomId').value = item.id;
+            document.getElementById('userRoomEpc').value = item.epc;
+            document.getElementById('userRoomDoor').value = item.door;
+            document.getElementById('userRoomState').value = String(item.state);
+            
+            showContainer('userRoomFormContainer');
+        }
+
+        async function guardarUserRoom(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('userRoomId').value;
+            const epc = document.getElementById('userRoomEpc').value;
+            const door = document.getElementById('userRoomDoor').value;
+            const state = parseInt(document.getElementById('userRoomState').value);
+            
+            const data = { epc, door, state };
+            
+            try {
+                let response;
+                
+                if (id) {
+                    response = await apiRequest(`/user-room/${id}`, 'PUT', data);
+                    showToast('Registro actualizado correctamente');
+                } else {
+                    response = await apiRequest('/user-room', 'POST', data);
+                    showToast('Registro creado correctamente');
+                }
+                
+                showContainer('userRoomContainer');
+                consultarUserRoom();
+            } catch (error) {
+                showToast('Error al guardar el registro', 'error');
+            }
+        }
+
+        async function eliminarUserRoom(id) {
+            if (!confirm(`¿Está seguro de eliminar el registro con ID ${id}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await apiRequest(`/user-room/${id}`, 'DELETE');
+                showToast(response.message);
+                consultarUserRoom();
+            } catch (error) {
+                showToast('Error al eliminar el registro', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

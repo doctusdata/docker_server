@@ -1,0 +1,17 @@
+{
+  "port": 3000,
+  "apiKey": "rfid_api_2025_f8e7d6c5b4a3210987654321abcdef98",
+  "database": {
+    "host": "192.168.1.155",
+    "port": 5432,
+    "name": "gestion_rfid",
+    "user": "rfidroom",
+    "password": "rfidroom@2025",
+    "ssl": false
+  },
+  "logging": {
+    "level": "info",
+    "maxFiles": 5,
+    "maxSize": "10m"
+  }
+}

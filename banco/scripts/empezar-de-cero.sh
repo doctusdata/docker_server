@@ -45,7 +45,7 @@ if [ "$COPIA" = "1" ]; then
     # que no se nota hasta que hace falta restaurar.
     FICHERO="$HOME/antes-de-cero-$(date +%Y%m%d-%H%M).sql.gz"
     docker compose exec -T pg pg_dump -U rfidroom -d gestion_rfid | gzip > "$FICHERO"
-    if ! zcat "$FICHERO" | tail -5 | grep -q "PostgreSQL database dump complete"; then
+    if ! gzip -dc "$FICHERO" | grep -q "PostgreSQL database dump complete"; then
         printf '%s La copia parece truncada. No sigo.%s\n' "$r" "$n"; exit 1
     fi
     printf '%s✓%s %s (%s)\n' "$v" "$n" "$FICHERO" "$(du -h "$FICHERO" | cut -f1)"

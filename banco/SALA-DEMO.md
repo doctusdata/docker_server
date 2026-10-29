@@ -250,14 +250,67 @@ política siempre*.
 
 ### Volver atrás
 
-La copia del paso 1 está en `~/antes-de-cero-*.sql.gz`.
+**Los dos lados se deshacen de forma distinta, y conviene saberlo antes de empezar.**
+
+| | Cómo se vuelve | Qué se pierde |
+|---|---|---|
+| **Gestión** (Alembic) | `alembic downgrade <revisión>` | nada, salvo en `l4` |
+| **La Pi** (ficheros SQL) | **solo restaurando un volcado** | lo ocurrido desde la copia |
+
+#### Gestión: hay `downgrade` y funciona
+
+Probado de verdad contra PostgreSQL 18: las cinco migraciones nuevas suben y bajan.
+
+```bash
+cd backend
+alembic downgrade k2_implantable_precio_origen   # deshace l1, l2, l4, l5 y m1
+alembic current                                  # comprobar dónde quedó
+```
+
+La única que **pierde datos** es `l4`: borró los productos con GTIN sintético, y su
+`downgrade` quita el CHECK pero no los resucita. No se puede inventar lo que se
+borró, y fingir que sí sería peor que no poder volver.
+
+#### La Pi: no hay `downgrade`, y `018` no tiene vuelta
+
+`python -m irfid migrar` **solo va hacia delante**: aplica `sql/010…020` y no existe
+ningún mecanismo inverso. Y `018` reconstruye el ENUM de estados —crea el nuevo,
+convierte las columnas, borra el viejo—, así que después no queda ni el tipo
+anterior.
+
+**La copia no es opcional aquí. Es el único camino de vuelta.**
+
+El paso 1 ya la hace y la verifica (si el volcado sale truncado, no sigue). Queda
+en `~/antes-de-cero-*.sql.gz`.
 
 ```bash
 docker compose stop irfid-almacen irfid-orquestador
-gunzip -c ~/antes-de-cero-AAAAMMDD-HHMM.sql.gz | \
+docker compose exec -T pg psql -U rfidroom -d postgres \
+  -c 'DROP DATABASE gestion_rfid' -c 'CREATE DATABASE gestion_rfid'
+gzip -dc ~/antes-de-cero-AAAAMMDD-HHMM.sql.gz | \
   docker compose exec -T pg psql -U rfidroom -d gestion_rfid
 docker compose up -d
+./scripts/verificar-sincronizacion.sh --esquema
 ```
+
+> El `DROP`/`CREATE` antes de restaurar **importa**: restaurar encima de una base ya
+> migrada deja las tablas nuevas conviviendo con el esquema viejo, y el resultado no
+> es ni lo uno ni lo otro. El ciclo completo —copiar, migrar, restaurar— está
+> probado: vuelven los estados `stock` y el ENUM anterior.
+
+#### Si vas a tocar la base a mano
+
+Haz la copia tú, con el mismo criterio que el script:
+
+```bash
+docker compose exec -T pg pg_dump -U rfidroom -d gestion_rfid \
+  | gzip > ~/antes-de-$(date +%Y%m%d-%H%M).sql.gz
+# y COMPRUÉBALA, que un volcado truncado no se nota hasta que hace falta:
+gzip -dc ~/antes-de-*.sql.gz | grep -c "PostgreSQL database dump complete"
+```
+
+**Siempre `pg_dump`, nunca copiando el volumen de Docker**: en caliente sale
+corrupto, y es un error que no se descubre hasta el día que intentas restaurar.
 
 ---
 
