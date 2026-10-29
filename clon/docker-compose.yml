@@ -23,7 +23,10 @@ x-irfid-env: &irfid-env
   IRFID_MQTT_HOST: mosquitto
   IRFID_MQTT_USERNAME: ${MQTT_USER}
   IRFID_MQTT_PASSWORD: ${MQTT_PASS}
-  IRFID_LEGACY_MIRROR: "true"
+  # El espejo legacy ya no se puede encender: desde 018 los estados son los de la
+  # gestion (almacen, en_transito, usado, retirado) y escribir en EPC_readings
+  # pondria alli la semantica antigua. El servicio se niega a arrancar con "true".
+  IRFID_LEGACY_MIRROR: "false"
   IRFID_LEGACY_TZ: ${TZ:-Europe/Madrid}
   IRFID_CICLOS_PARA_CIRCULANTE: ${IRFID_CICLOS_PARA_CIRCULANTE:-3}
   IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
