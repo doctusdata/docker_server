@@ -287,32 +287,20 @@ command: ["sh", "-c", "python -m irfid migrar && exec python -m irfid almacen"]
 **El contenedor migra al arrancar.** Restauras el volcado, haces `docker compose up -d`
 y en segundos se reaplica `sql/010…020` encima. El rescate se deshace solo.
 
-Para volver atrás de verdad hacen falta **las dos mitades, y en este orden**:
+Hacen falta **las dos mitades, y en este orden**: parar, devolver la imagen, y solo
+después la base. Eso es todo lo que hace el script:
 
 ```bash
-cd ~/roomfid
-
-# 1. Parar. Mientras algo corra, migra.
-docker compose down
-
-# 2. El código de antes. Sin esto, el paso 3 no dura ni un arranque.
-docker tag roomfid/irfid:antes-de-cero-AAAAMMDD-HHMM roomfid/irfid:latest
-
-# 3. La base
-docker compose up -d pg
-docker compose exec -T pg psql -U rfidroom -d postgres \
-  -c 'DROP DATABASE gestion_rfid' -c 'CREATE DATABASE gestion_rfid'
-gzip -dc ~/antes-de-cero-AAAAMMDD-HHMM.sql.gz | \
-  docker compose exec -T pg psql -U rfidroom -d gestion_rfid
-
-# 4. Levantar y comprobar
-docker compose up -d
-./scripts/verificar-sincronizacion.sh --esquema
+./scripts/volver-atras.sh                  # lista los puntos de restauración
+./scripts/volver-atras.sh 20261029-0930    # vuelve a ese
 ```
 
-El `DROP`/`CREATE` del paso 3 **importa**: restaurar encima de una base ya migrada
-deja las tablas nuevas conviviendo con el esquema viejo, y el resultado no es ni lo
-uno ni lo otro.
+Comprueba el volcado **antes** de destruir nada —uno truncado descubierto a mitad te
+deja sin base vieja y sin base nueva—, guarda la imagen actual por si la vuelta
+tampoco convence, y pide escribir `volver`.
+
+Un punto de restauración son **dos cosas**: el volcado y la etiqueta de imagen del
+mismo sello. El listado dice de cada uno si tiene las dos o solo la base.
 
 > **El paso 2 depende de que exista la etiqueta.** `empezar-de-cero.sh` la crea al
 > hacer la copia, porque aquí `banco/` construye siempre a `:latest` —a diferencia de
