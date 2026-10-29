@@ -271,32 +271,68 @@ La única que **pierde datos** es `l4`: borró los productos con GTIN sintético
 `downgrade` quita el CHECK pero no los resucita. No se puede inventar lo que se
 borró, y fingir que sí sería peor que no poder volver.
 
-#### La Pi: no hay `downgrade`, y `018` no tiene vuelta
+#### La Pi: la base sola no revierte nada
 
 `python -m irfid migrar` **solo va hacia delante**: aplica `sql/010…020` y no existe
-ningún mecanismo inverso. Y `018` reconstruye el ENUM de estados —crea el nuevo,
-convierte las columnas, borra el viejo—, así que después no queda ni el tipo
-anterior.
+mecanismo inverso. Y `018` reconstruye el ENUM de estados —crea el nuevo, convierte
+las columnas, borra el viejo—, así que después no queda ni el tipo anterior. La copia
+es el único camino.
 
-**La copia no es opcional aquí. Es el único camino de vuelta.**
+Pero la copia **de la base** no basta, y esta es la parte que no se ve venir:
 
-El paso 1 ya la hace y la verifica (si el volcado sale truncado, no sigue). Queda
-en `~/antes-de-cero-*.sql.gz`.
+```yaml
+command: ["sh", "-c", "python -m irfid migrar && exec python -m irfid almacen"]
+```
+
+**El contenedor migra al arrancar.** Restauras el volcado, haces `docker compose up -d`
+y en segundos se reaplica `sql/010…020` encima. El rescate se deshace solo.
+
+Para volver atrás de verdad hacen falta **las dos mitades, y en este orden**:
 
 ```bash
-docker compose stop irfid-almacen irfid-orquestador
+cd ~/roomfid
+
+# 1. Parar. Mientras algo corra, migra.
+docker compose down
+
+# 2. El código de antes. Sin esto, el paso 3 no dura ni un arranque.
+docker tag roomfid/irfid:antes-de-cero-AAAAMMDD-HHMM roomfid/irfid:latest
+
+# 3. La base
+docker compose up -d pg
 docker compose exec -T pg psql -U rfidroom -d postgres \
   -c 'DROP DATABASE gestion_rfid' -c 'CREATE DATABASE gestion_rfid'
 gzip -dc ~/antes-de-cero-AAAAMMDD-HHMM.sql.gz | \
   docker compose exec -T pg psql -U rfidroom -d gestion_rfid
+
+# 4. Levantar y comprobar
 docker compose up -d
 ./scripts/verificar-sincronizacion.sh --esquema
 ```
 
-> El `DROP`/`CREATE` antes de restaurar **importa**: restaurar encima de una base ya
-> migrada deja las tablas nuevas conviviendo con el esquema viejo, y el resultado no
-> es ni lo uno ni lo otro. El ciclo completo —copiar, migrar, restaurar— está
-> probado: vuelven los estados `stock` y el ENUM anterior.
+El `DROP`/`CREATE` del paso 3 **importa**: restaurar encima de una base ya migrada
+deja las tablas nuevas conviviendo con el esquema viejo, y el resultado no es ni lo
+uno ni lo otro.
+
+> **El paso 2 depende de que exista la etiqueta.** `empezar-de-cero.sh` la crea al
+> hacer la copia, porque aquí `banco/` construye siempre a `:latest` —a diferencia de
+> `clon/`, que versiona con `ETIQUETA`— y al reconstruir la imagen anterior pierde el
+> nombre. Si no la tienes, la vuelta es `git checkout` de la rama anterior y
+> `./scripts/construir.sh`: media hora y **con internet**, que en la sala puede no
+> haber.
+
+#### Lo que tampoco está en el volcado
+
+Tres sitios más guardan estado, y ninguno sale en el `pg_dump`:
+
+| Dónde | Qué | ¿Importa al volver? |
+|---|---|---|
+| volumen `irfid-spool` | observaciones aún sin procesar (SQLite) | se reprocesan contra la base restaurada. Es *al menos una vez* por diseño, así que no rompe |
+| volumen `mosquitto-data` | QoS 1 retenidos (`clean_session=False`) | se entregan al reconectar. Igual |
+| ficheros del host | `.env`, `topologia.json`, `api/app.json`, `node.yaml` | **sí** — si los editaste, guárdalos tú: nadie lo hace por ti |
+
+Las credenciales de vinculación con gestión **sí** viajan en el volcado (están en
+`traza.vinculacion`), así que restaurar no obliga a volver a vincular.
 
 #### Si vas a tocar la base a mano
 

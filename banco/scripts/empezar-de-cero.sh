@@ -49,6 +49,24 @@ if [ "$COPIA" = "1" ]; then
         printf '%s La copia parece truncada. No sigo.%s\n' "$r" "$n"; exit 1
     fi
     printf '%s✓%s %s (%s)\n' "$v" "$n" "$FICHERO" "$(du -h "$FICHERO" | cut -f1)"
+
+    # La copia de la base NO basta para volver atras, y es lo que mas sorprende:
+    # `irfid-almacen` arranca con `python -m irfid migrar`, asi que al levantar los
+    # servicios se reaplica sql/010..020 sobre la base restaurada y el rescate se
+    # deshace solo, en segundos. Para volver hace falta tambien el codigo de antes.
+    #
+    # Y aqui `banco/` construye siempre a `:latest` (a diferencia de `clon/`, que
+    # versiona con ETIQUETA): al reconstruir, la imagen anterior pierde el nombre y
+    # solo se recupera reconstruyendo desde git, con internet y media hora. Ponerle
+    # nombre ANTES cuesta un segundo y es la diferencia entre volver en 30 segundos
+    # o en 30 minutos.
+    if docker image inspect roomfid/irfid:latest >/dev/null 2>&1; then
+        SELLO="antes-de-cero-$(date +%Y%m%d-%H%M)"
+        docker tag roomfid/irfid:latest "roomfid/irfid:$SELLO"
+        printf '%s✓%s imagen anterior guardada como roomfid/irfid:%s\n' "$v" "$n" "$SELLO"
+    else
+        printf '%s!%s no habia imagen previa que guardar (instalacion nueva)\n' "$a" "$n"
+    fi
 fi
 
 # --- 2. Parar lo que escribe ----------------------------------------------------------
