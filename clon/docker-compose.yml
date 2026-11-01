@@ -23,7 +23,7 @@ x-irfid-env: &irfid-env
   IRFID_MQTT_HOST: mosquitto
   IRFID_MQTT_USERNAME: ${MQTT_USER}
   IRFID_MQTT_PASSWORD: ${MQTT_PASS}
-  IRFID_LEGACY_MIRROR: "true"
+  IRFID_LEGACY_MIRROR: "false"
   IRFID_LEGACY_TZ: ${TZ:-Europe/Madrid}
   IRFID_CICLOS_PARA_CIRCULANTE: ${IRFID_CICLOS_PARA_CIRCULANTE:-3}
   IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
@@ -89,7 +89,7 @@ services:
       - "1883:1883"
 
   api:
-    image: roomfid/api:${ETIQUETA:-latest}
+    image: roomfid/api:latest
     container_name: banco-api
     restart: unless-stopped
     environment:
@@ -106,7 +106,7 @@ services:
   irfid-almacen:
     <<: *irfid
     container_name: banco-irfid-almacen
-    command: ["sh", "-c", "python -m irfid migrar && exec python -m irfid almacen"]
+    command: ["sh", "-c", "python -m irfid migrar && python -m irfid bootstrap && exec python -m irfid almacen"]
     environment:
       <<: *irfid-env
       IRFID_MQTT_CLIENT_ID: irfid-almacen
@@ -147,16 +147,16 @@ services:
       TZ: ${TZ:-Europe/Madrid}
       RFID_API_URL: http://api:3000/api
       RFID_API_KEY: ${API_KEY}
-      # Segunda fuente: el estado de los lectores y el stock por almacen salen de irfid,
-      # no de la API heredada, que no sabe nada de eso. Por nombre de servicio, no por
-      # 127.0.0.1: dentro de este contenedor eso seria el visor mismo.
+      # Segunda fuente: el stock por almacen y el estado de los lectores salen de irfid,
+      # no de la API heredada. Por nombre de servicio: 127.0.0.1 seria el visor mismo.
       ALMACEN_API_URL: http://irfid-almacen:8090
+      INVENTARIO_API_URL: http://irfid-almacen:8093
       CORS_ORIGINS: http://localhost:8020
     ports:
       - "8020:8020"
 
   monitor:
-    image: roomfid/monitor:${ETIQUETA:-latest}
+    image: roomfid/monitor:latest
     container_name: banco-monitor
     restart: unless-stopped
     environment:
@@ -178,7 +178,7 @@ services:
   # Agente de monitorizacion de esta Pi: red de host (sondea los lectores y llega a
   # irfid y al nodo por los puertos publicados), disco y contenedores en solo lectura.
   monitor-agente:
-    image: roomfid/agente:${ETIQUETA:-latest}
+    image: roomfid/agente:latest
     container_name: banco-monitor-agente
     restart: unless-stopped
     network_mode: host
