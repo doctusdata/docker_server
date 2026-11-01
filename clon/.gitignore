@@ -1,2 +1,3 @@
 # El paquete pesa ~180 MB y se regenera con empaquetar.sh: no va al control de versiones.
 roomfid-pi-*.tar.gz
+roomfid-actualizar-*.tar.gz
