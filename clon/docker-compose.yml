@@ -26,6 +26,10 @@ x-irfid-env: &irfid-env
   IRFID_LEGACY_MIRROR: "false"
   IRFID_LEGACY_TZ: ${TZ:-Europe/Madrid}
   IRFID_CICLOS_PARA_CIRCULANTE: ${IRFID_CICLOS_PARA_CIRCULANTE:-3}
+  # Minutos que una devolucion manual del visor protege a la etiqueta de volver a
+  # salir. Por encima de la sombra medida (21 min el 26/10 en etiquetas presentes).
+  # A 0 se desactiva. Va en el ancla porque irfid-almacen la hereda de aqui.
+  IRFID_GRACIA_DEVOLUCION_MIN: ${IRFID_GRACIA_DEVOLUCION_MIN:-30}
   IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
   IRFID_HORAS_ALERTA_TEMPORAL: ${IRFID_HORAS_ALERTA_TEMPORAL:-24}
   IRFID_VENTANA_MIN_S: ${IRFID_VENTANA_MIN_S:-30}
@@ -123,6 +127,11 @@ services:
       # tapa lo que traiga la imagen **en silencio**, asi que si se queda, la Pi seguiria
       # ejecutando este fichero y nadie lo notaria.
       - ./parches/api.py:/usr/local/lib/python3.12/site-packages/irfid/inventario/api.py:ro
+      # Y este NO es cosmetico: es la logica del ciclo. Una ventana `corta` ya no
+      # invalida el ciclo -son artefactos de 0-2 s del apagado del lector, y al
+      # invalidar se llevaban la ventana buena de 90 s que esperaba pareja-.
+      # Imprescindible para leer en serie. Commiteado en irfid 832fce7.
+      - ./parches/repo.py:/usr/local/lib/python3.12/site-packages/irfid/almacen/repo.py:ro
     ports:
       - "8090:8090"
       # API de papeleras: por aqui entran las sesiones de los terminales

@@ -114,7 +114,8 @@ SELECT e.epc,
        e.usuario_at,
        e.asignacion_confianza::text                 AS confianza,
        e.temporal_desde,
-       e.ciclos_sin_leer
+       e.ciclos_sin_leer,
+       e.gracia_hasta
   FROM traza.elemento e
   LEFT JOIN traza.ubicacion u  ON u.id  = e.ubicacion_id
   LEFT JOIN traza.ubicacion uo ON uo.id = e.ubicacion_origen_id
@@ -221,13 +222,15 @@ class Datos:
     toca: la usa la ingesta, que es el camino caliente.
     """
 
-    def __init__(self, dsn: str, tz: str = "Europe/Madrid", umbral_ciclos: int = 3) -> None:
+    def __init__(self, dsn: str, tz: str = "Europe/Madrid", umbral_ciclos: int = 3,
+                 gracia_min: float = 30.0) -> None:
         self._dsn = dsn
         self._tz = tz
         # El umbral viaja al visor para que la tabla pueda escribir "1 de 15" en vez de
         # un "1" suelto. Sin denominador, la cifra no explica nada: lo que convence a
         # quien mira es ver cuanto falta para que el sistema de algo por salido.
         self._umbral = umbral_ciclos
+        self._gracia_min = gracia_min
         self._cx: psycopg.Connection | None = None
         self._lock = asyncio.Lock()
 
@@ -319,6 +322,7 @@ class Datos:
             "cuentas": cuentas,
             "dias_terminados": DIAS_TERMINADOS,
             "umbral_ciclos": self._umbral,
+            "gracia_devolucion_min": self._gracia_min,
             "pasada": {
                 "at": pasada["cerrado_at"].isoformat() if pasada else None,
                 "vistas": pasada["presentes"] if pasada else None,
@@ -476,20 +480,31 @@ class Datos:
         if not validas:
             return {"devueltas": 0, "epcs": [], "sin_ubicacion": sin_ubicacion}
 
+        # **La gracia es lo que hace util al boton.** Sin ella la devolucion compraba una
+        # sola pasada de tregua: lo que falla siempre volvia a transito a los tres minutos.
+        # Y al contrario, devolver algo que SI estaba fuera reiniciaba su cuenta y
+        # retrasaba la deteccion real un umbral entero. Con `gracia_hasta` se aplaza la
+        # conclusion sin borrar la evidencia: el contador vuelve a subir desde cero pero no
+        # se escala hasta que expire. Ver reglas._escalar y 022_gracia_devolucion.sql.
+        gracia = (f"now() + interval '{self._gracia_min} minutes'"
+                  if self._gracia_min > 0 else "NULL")
         cur.execute(
-            """UPDATE traza.elemento e
+            f"""UPDATE traza.elemento e
                   SET estado = 'almacen',
                       ubicacion_id = COALESCE(e.ubicacion_id, e.ubicacion_origen_id),
                       temporal = false,
                       temporal_desde = NULL,
                       ciclos_sin_leer = 0,
+                      gracia_hasta = {gracia},
                       usuario_tarjeta = NULL,
                       usuario_nombre = NULL,
                       usuario_at = NULL,
                       asignacion_confianza = NULL
-                WHERE e.epc = ANY(%s)""",
+                WHERE e.epc = ANY(%s)
+            RETURNING e.epc, e.gracia_hasta""",
             [[f["epc"] for f in validas]],
         )
+        hasta = {f["epc"]: f["gracia_hasta"] for f in cur.fetchall()}
         cur.executemany(
             """INSERT INTO traza.movimiento
                       (epc, at, tipo, estado_origen, estado_destino,
@@ -500,11 +515,13 @@ class Datos:
               f["ubicacion_id"] or f["ubicacion_origen_id"],
               Jsonb({"accion": "devolver_al_almacen", "origen": "visor",
                      "grupo": grupo, "alcance": "todas" if todas else "seleccion",
-                     "ciclos_sin_leer": f["ciclos_sin_leer"]}))
+                     "ciclos_sin_leer": f["ciclos_sin_leer"],
+                     "gracia_hasta": hasta.get(f["epc"])}))
              for f in validas],
         )
         return {"devueltas": len(validas), "epcs": [f["epc"] for f in validas],
-                "sin_ubicacion": sin_ubicacion}
+                "sin_ubicacion": sin_ubicacion,
+                "gracia_min": self._gracia_min}
 
     def _fila(self, f: dict) -> dict[str, Any]:
         d = {k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in f.items()}
@@ -534,7 +551,8 @@ class Devolucion(BaseModel):
 
 def crear_app(s: Settings, datos: Datos | None = None) -> FastAPI:
     app = FastAPI(title="API de inventario RoomFID", docs_url=None, redoc_url=None)
-    d = datos or Datos(s.pg_dsn, s.tz_presentacion, s.ciclos_para_circulante)
+    d = datos or Datos(s.pg_dsn, s.tz_presentacion, s.ciclos_para_circulante,
+                       s.gracia_devolucion_min)
     app.state.datos = d
 
     @app.get(PREFIJO + "/resumen")

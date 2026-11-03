@@ -242,8 +242,8 @@ Medido con `ORQ_PARALELO` en `false`, ventana de 90 s, sobre las mismas 957 etiq
 | faltantes por pasada, estantería completa | **24,5** (8-44) | **2-5** |
 | cobertura | 97,4% | **99,5-99,8%** |
 | ciclo | 122 s | 190 s |
-| umbral que lo aguanta | 3 | **1** |
-| detección de una retirada | ~6,5 min | **una pasada, 3,2-6,3 min** |
+| umbral que lo aguanta | 3 | **2** (se probó 1, ver abajo) |
+| detección de una retirada | ~6,5 min | **dos pasadas, ~6,3 min** |
 
 **Cien etiquetas más por lector, sólo por no encenderlos juntos.** El sistema antiguo no
 acertaba por el umbral: acertaba por esto.
@@ -286,7 +286,7 @@ IRFID_ORQ_PARALELO=false
 IRFID_ORQ_VENTANA_S=90
 IRFID_ORQ_PAUSA_S=5
 IRFID_ORQ_PERIODO_S=190          # 90+5+90=185: ciclos encadenados, sin hueco muerto
-IRFID_CICLOS_PARA_CIRCULANTE=1
+IRFID_CICLOS_PARA_CIRCULANTE=2
 IRFID_MINUTOS_PARA_CIRCULANTE=60 # no interviene; queda de tope
 ```
 
@@ -308,12 +308,44 @@ no hacía nada y el síntoma era «lo he cambiado y sigue en paralelo».
    `arranque` e invalida su ciclo. Reiniciando seguido, el contador no avanza nunca y
    parece que el sistema no detecta nada. Pasó tres veces.
 
-### Y con umbral 1 no hay red de seguridad
+### Se probó el umbral 1, y se subió a 2 a las 13:32
+
+Con la cobertura medida, el 1 parecía lo correcto: es lo que hacía el sistema antiguo, y
+daba la salida en 3,2 minutos. **En la sala no aguantó**, y el motivo no es la cobertura
+media sino su varianza: con 2-8 faltantes por pasada y umbral 1, la lista de tránsito **es
+literalmente «lo que falló la última pasada»**, así que subía y bajaba sola entre 6 y 10
+con sólo 3 etiquetas realmente fuera. Para una demostración eso es peor que tardar: el
+cliente ve un número moverse sin que nadie toque nada.
+
+**El 2 no es un número a dedo: está donde la distribución tiene el escalón.** Medidas las
+desapariciones del tramo en serie, de las 124 que ya habían vuelto:
+
+| cuánto duró la desaparición | episodios |
+|---|---|
+| **una pasada** (≤200 s) | **106 — el 85%** |
+| dos pasadas (200-400 s) | 14 |
+| tres o cuatro (400-700 s) | 3 |
+| más de 700 s | 1 |
+
+Pedir **dos pasadas seguidas** elimina ese 85% de un golpe. Y la frecuencia ya había caído
+sola con la serie: de **464 desapariciones por hora en paralelo a 71 en serie**.
+
+El precio es la mitad de velocidad —~6,3 min en vez de 3,2— y sigue siendo mejor que los
+~6,5 del día anterior, pero con una lista que no respira.
+
+**Por qué desaparecen, que es la pregunta de fondo:** no se van a ningún sitio. Una etiqueta
+se lee o no según su **margen sobre la sensibilidad** (−85 dBm). Las que van sobradas se
+leen siempre; las que están al límite se leen **con probabilidad**, y cada vuelta de
+inventario es casi una moneda al aire. De ahí el patrón: unas pocas al azar en cada pasada
+más un conjunto fijo que falla casi siempre. La interferencia entre lectores era lo que
+empujaba a media estantería a ese límite.
+
+### Y con umbral bajo no hay red de seguridad
 
 Es asumido, no un descuido. Lo que lo hace defendible son dos cosas **medidas**: la
 cobertura (2-5 faltantes de 957) y que un falso positivo se quita con un clic desde
-**«Devolver al almacén»**, dejando su `ajuste_manual` en el historial. Sin ese botón, el
-umbral 1 no sería defendible.
+**«Devolver al almacén»**, dejando su `ajuste_manual` en el historial. Sin ese botón, bajar
+de 3 no sería defendible.
 
 ---
 

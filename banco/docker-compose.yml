@@ -29,6 +29,10 @@ x-irfid-env: &irfid-env
   IRFID_LEGACY_MIRROR: "true"
   IRFID_LEGACY_TZ: ${TZ:-Europe/Madrid}
   IRFID_CICLOS_PARA_CIRCULANTE: ${IRFID_CICLOS_PARA_CIRCULANTE:-3}
+  # Minutos que una devolucion manual del visor protege a la etiqueta de volver a
+  # salir. Por encima de la sombra medida (21 min el 26/10 en etiquetas presentes).
+  # A 0 se desactiva. Va en el ancla porque irfid-almacen la hereda de aqui.
+  IRFID_GRACIA_DEVOLUCION_MIN: ${IRFID_GRACIA_DEVOLUCION_MIN:-30}
   IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
   IRFID_HORAS_ALERTA_TEMPORAL: ${IRFID_HORAS_ALERTA_TEMPORAL:-24}
   IRFID_VENTANA_MIN_S: ${IRFID_VENTANA_MIN_S:-30}

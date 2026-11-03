@@ -1,5 +1,21 @@
 # Parches provisionales montados en los contenedores
 
+> ## ⚠ ESTOS FICHEROS YA NO SE PUEDEN COPIAR SUELTOS A LA PI
+>
+> El `api.py` de aquí consulta `traza.elemento.gracia_hasta`, que **no existe** hasta
+> aplicar `irfid/servicio/sql/022_gracia_devolucion.sql`, y la lógica que da sentido a esa
+> columna está en `almacen/reglas.py` y `config.py`, que **no están montados**.
+>
+> Copiar sólo `api.py` **rompe la API de inventario** (la consulta falla y el visor se
+> queda sin cifras). Lo que hay aquí es *la versión siguiente*, coherente entre sí y
+> **pendiente de imagen**.
+>
+> **Se despliega construyendo imagen** (`clon/construir-arm64.sh`), no copiando ficheros.
+> Y ése es el momento de borrar todos estos montajes, no antes.
+>
+> Lo que corre hoy en la Pi es la versión anterior, sin gracia, y funciona.
+
+
 **Esto no debería existir.** Son dos ficheros que van montados encima de lo que traen las
 imágenes, porque el 31/10 y el 1/11 no se pudieron mover las imágenes nuevas a la Pi de la
 sala: `scp` se cuelga contra ese enlace y son 56 y 83 MB. Los ficheros sueltos sí caben.
