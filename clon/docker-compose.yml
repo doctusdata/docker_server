@@ -114,6 +114,15 @@ services:
     volumes:
       - irfid-spool:/data/spool
       - ./topologia.json:/app/topologia.json:ro
+      # **PARCHE TEMPORAL — ver parches/LEEME.md.** Montado y no copiado dentro a
+      # proposito: `docker cp` deja el fichero en la capa de escritura del contenedor, y
+      # `docker compose up -d` lo destruye al recrearlo. Paso el 1/11 al aplicar los
+      # umbrales: la cifra de "en observacion" desaparecio del panel. Montado sobrevive.
+      #
+      # QUITAR en cuanto se despliegue la imagen que ya lleve el grupo dentro: un montaje
+      # tapa lo que traiga la imagen **en silencio**, asi que si se queda, la Pi seguiria
+      # ejecutando este fichero y nadie lo notaria.
+      - ./parches/api.py:/usr/local/lib/python3.12/site-packages/irfid/inventario/api.py:ro
     ports:
       - "8090:8090"
       # API de papeleras: por aqui entran las sesiones de los terminales
@@ -134,6 +143,12 @@ services:
       IRFID_ORQ_VENTANA_S: ${IRFID_ORQ_VENTANA_S:-120}
       IRFID_ORQ_PAUSA_S: ${IRFID_ORQ_PAUSA_S:-5}
       IRFID_ORQ_PERIODO_S: ${IRFID_ORQ_PERIODO_S:-300}
+      # Los dos lectores a la vez (true) o uno detras de otro como hacia Node-RED
+      # (false). **No estaba declarado aqui, y ponerlo solo en el .env no hacia nada**:
+      # este bloque no hereda las IRFID_ORQ_*, las enumera. Se expone para poder medir
+      # si leer en serie sube la cobertura por pasada -- la hipotesis de interferencia
+      # entre los dos lectores de la misma sala, que sigue sin demostrar.
+      IRFID_ORQ_PARALELO: ${IRFID_ORQ_PARALELO:-true}
       IRFID_ORQ_DIGEST_USER: ${LECTOR_USER:-admin}
       IRFID_ORQ_DIGEST_PASSWORD: ${LECTOR_PASS:-admin}
     ports:
@@ -152,6 +167,16 @@ services:
       ALMACEN_API_URL: http://irfid-almacen:8090
       INVENTARIO_API_URL: http://irfid-almacen:8093
       CORS_ORIGINS: http://localhost:8020
+    volumes:
+      # Mismo caso que el de irfid: los estaticos del panel nuevo, montados para que no
+      # se los lleve una recreacion. Ver parches/LEEME.md.
+      - ./parches/web:/app/web:ro
+      # Y el backend: el boton de reiniciar observacion necesita una ruta POST que la
+      # imagen no trae. `rfid_client` va con el porque ahi esta el `post()` que ademas
+      # tira la cache -- con TTL de 10 s, sin eso la pantalla ensena las cifras de antes
+      # justo despues de pulsar.
+      - ./parches/visor-inventario.py:/app/app/routers/inventario.py:ro
+      - ./parches/visor-rfid-client.py:/app/app/rfid_client.py:ro
     ports:
       - "8020:8020"
 

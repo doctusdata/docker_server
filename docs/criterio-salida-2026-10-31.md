@@ -223,11 +223,179 @@ habría forma de reconstruir con qué regla se tomó cada decisión. **No quitar
    validado de ida y vuelta, con punto de restauración por etiqueta de imagen
    (`roomfid/irfid:hoy-20261030`): unos 40 s cada sentido.
 
-## Lo que queda sin demostrar
+## Serie frente a paralelo: demostrado el 3/11/2026
 
-**Serie frente a paralelo.** irfid lee con los dos lectores a la vez y lo defiende por
-tiempo de ciclo; el antiguo los alterna. Dos lectores emitiendo en la misma sala **pueden
-interferirse**, y eso explicaría los «mejores resultados» por una vía que los datos
-guardados **no pueden confirmar**. Se mide en la sala con `tools/espia.py --epcs`,
-comparando etiquetas distintas por antena con `ORQ_PARALELO` en `false` y en `true`. Hasta
-entonces, es una hipótesis.
+Era la única hipótesis que quedaba abierta, y **era cierta**. Los dos lectores de la misma
+sala **se estaban cegando mutuamente**.
+
+Lo que lo destapó no fue una medida nuestra, fue acordarse de cómo trabajaba el sistema
+antiguo: `90 s un lector → parar → 90 s el otro → parar → ~30 s de procesado → repetir`, y
+**la que no estaba, estaba fuera**. Una sola pasada, sin histéresis ni contador. Eso sólo se
+sostiene con cobertura casi perfecta, y la nuestra no lo era.
+
+Medido con `ORQ_PARALELO` en `false`, ventana de 90 s, sobre las mismas 957 etiquetas:
+
+| | paralelo | **serie** |
+|---|---|---|
+| EPCs que ve `.157` leyendo **solo** | 814 (791-833) | **910 (877-936)** |
+| EPCs que ve `.158` leyendo **solo** | 795 (778-814) | **914 (893-930)** |
+| faltantes por pasada, estantería completa | **24,5** (8-44) | **2-5** |
+| cobertura | 97,4% | **99,5-99,8%** |
+| ciclo | 122 s | 190 s |
+| umbral que lo aguanta | 3 | **1** |
+| detección de una retirada | ~6,5 min | **una pasada, 3,2-6,3 min** |
+
+**Cien etiquetas más por lector, sólo por no encenderlos juntos.** El sistema antiguo no
+acertaba por el umbral: acertaba por esto.
+
+### La prueba a ciegas
+
+Se retiraron 27 etiquetas **sin decir el número**. La pasada de las 11:57:55 dio `vistas
+929, faltantes 28`, y el visor 28 en tránsito:
+
+```
+...253 a ...276    24 etiquetas    12,8 - 13,3 min sin leerse
+...602 a ...604     3 etiquetas    12,8 - 13,1 min
+                   ─────────────
+                   27  ← las retiradas, con el reloj subiendo junto
+...513              1 etiqueta      5,3 min   ← el unico falso positivo
+```
+
+Ninguna de menos. Y el error residual **no es aleatorio**: con todo devuelto a la
+estantería quedan cuatro en tránsito —`...333`, `...428`, `...514`, `...516`— y son **las
+mismas que llevaban fallando toda la mañana**. Cuatro etiquetas crónicas de 957, que es un
+problema físico de esas cuatro y va al estudio de cobertura, no al umbral.
+
+### El arreglo que lo hizo posible, y que sin él la serie parecía un fracaso
+
+Una ventana inválida por `corta` **ya no invalida el ciclo** (`almacen/repo.py`,
+`_ventana()`). Tras cada `stop` siguen llegando observaciones del agregador —la cola de la
+ráfaga, en vuelo cuando se apagó el lector— y abren una ventana de 0 a 2 s con decenas de
+EPC. `_cerrar_ciclo_invalido()` asigna **todas** las ventanas pendientes al ciclo
+descartado, así que ese artefacto se llevaba por delante los 90 s del lector que esperaba
+pareja: **una sola pasada válida en once minutos**, con las dos ventanas reales impecables.
+
+No hace falta que invalide para estar protegido: un ciclo sólo se cierra cuando todos los
+lectores requeridos tienen ventana pendiente **y válida**. Un `abort` sí sigue matando el
+ciclo — ahí alguien ha entrado.
+
+### La configuración que queda
+
+```
+IRFID_ORQ_PARALELO=false
+IRFID_ORQ_VENTANA_S=90
+IRFID_ORQ_PAUSA_S=5
+IRFID_ORQ_PERIODO_S=190          # 90+5+90=185: ciclos encadenados, sin hueco muerto
+IRFID_CICLOS_PARA_CIRCULANTE=1
+IRFID_MINUTOS_PARA_CIRCULANTE=60 # no interviene; queda de tope
+```
+
+**`IRFID_ORQ_PARALELO` hubo que declararlo en el compose.** El bloque `irfid-orquestador`
+**enumera** las `IRFID_ORQ_*`, no las hereda del ancla, así que ponerlo sólo en el `.env`
+no hacía nada y el síntoma era «lo he cambiado y sigue en paralelo».
+
+### Tres cosas que falsearon medidas antes de entenderlas
+
+1. **No promediar dos configuraciones.** Las primeras cifras tras cada cambio mezclaban
+   pasadas viejas con nuevas y daban un número que no describía ninguna: una «cadencia de
+   126,8 s» que en realidad eran 74,6, y una «ventana de 106,5 s» con el tope en 60.
+   **Esperar 10 minutos tras cada cambio y filtrar por ese intervalo.**
+2. **El ciclo abarca sus dos ventanas** (~190 s en serie). Un ciclo que *empieza* antes de
+   la retirada cuenta las etiquetas como presentes: de ahí un «5 faltantes» con 27 fuera.
+   No era contaminación de las ventanas `corta` —se sospechó y era falso—, era el tramo
+   solapando el momento de sacarlas.
+3. **Cada `up -d` del orquestador cuesta un ciclo**: la primera ventana tras arrancar es
+   `arranque` e invalida su ciclo. Reiniciando seguido, el contador no avanza nunca y
+   parece que el sistema no detecta nada. Pasó tres veces.
+
+### Y con umbral 1 no hay red de seguridad
+
+Es asumido, no un descuido. Lo que lo hace defendible son dos cosas **medidas**: la
+cobertura (2-5 faltantes de 957) y que un falso positivo se quita con un clic desde
+**«Devolver al almacén»**, dejando su `ajuste_manual` en el historial. Sin ese botón, el
+umbral 1 no sería defendible.
+
+---
+
+## Cómo se enseña la política en pantalla (1/11/2026)
+
+La política —**X pasadas sin leer y entonces fuera**— sólo convence si se ve. Y lo que se
+veía era el resultado, no el criterio: la tarjeta «En observación» con su cifra, y una
+tabla con «en almacén» y una hora, que no explica por qué esa etiqueta está en esa lista.
+
+Ahora la pestaña «En observación» lleva su propia tabla, con la columna que lo dice todo:
+
+| columna | qué enseña |
+|---|---|
+| **Pasadas sin leer** | `1 de 15` · «faltan 14 para darla por salida» |
+| Última lectura | con segundos, de la pasada en que se vio por última vez |
+| Dudando desde | cuándo empezó a fallar |
+
+**El denominador es el de verdad, no uno escrito a mano.** `/resumen` devuelve
+`umbral_ciclos`, que sale de `IRFID_CICLOS_PARA_CIRCULANTE` (hoy **15**). Si alguien
+ajusta el umbral, la tabla lo refleja sola; un 15 incrustado en el frontend habría acabado
+mintiendo el día que se cambie.
+
+Con eso, las dos listas se explican la una a la otra: **las de observación llevan 1 o 2
+pasadas de 15** —todavía lejos—, y **las dos de tránsito agotaron las 15**. Es la
+demostración de que el sistema no da nada por salido a la primera.
+
+### Y va detrás del modo técnico
+
+**Con `?tecnico=0` —lo normal— «En observación» no existe en la pantalla**: ni tarjeta, ni
+pestaña, ni el aviso «no visto en esta pasada» en las filas de «En almacén». Quedan las
+cuatro cifras de siempre. Con `?tecnico=1` aparece la quinta y su tabla.
+
+La razón: **la cifra no resta del total.** Observación está *dentro* de «En almacén», así
+que fuera de un diagnóstico no informa de nada y sí invita a preguntar si el sistema pierde
+etiquetas. Enseñarla exige saber que fallar una pasada es normal, y eso no cabe en el pie
+de una tarjeta.
+
+**Esconder la pestaña no bastaba.** El grupo elegido vivía en el estado del componente: al
+apagar el modo técnico con esa pestaña abierta, la tabla seguía sirviendo sus filas bajo el
+rótulo de otra, que es peor que enseñarlas. Ahora el grupo se fuerza a `inventario` y la
+consulta no se hace siquiera.
+
+Y los tres sitios se esconden juntos a propósito: el aviso por fila dice lo mismo que la
+cifra, así que dejar uno puesto habría vaciado de sentido al modo técnico.
+
+Ver `clon/parches/LEEME.md`: hasta que haya imagen nueva, los dos ficheros van **montados**
+desde el disco de la Pi, no copiados dentro.
+
+---
+
+## El botón de reiniciar pasadas (3/11/2026)
+
+En la pestaña «En observación» —modo técnico— hay ahora un botón por fila y otro para
+todas: **pone el contador de pasadas a cero**. Es para el caso real de «he comprobado la
+estantería, está completa, lo que falla es la lectura».
+
+**Hace exactamente lo que una reaparición**, que es lo único defendible: `temporal=false`,
+`temporal_desde=NULL`, `ciclos_sin_leer=0` y **se borra la atribución de usuario**. Eso
+último no es un extra: reiniciar el contador y dejar el nombre puesto sería declarar que la
+etiqueta está donde debe y conservar a quien supuestamente se la llevó.
+
+Por eso el elemento **sale** de la lista: el grupo es `estado='almacen' AND temporal`. Si la
+siguiente pasada tampoco lo ve, vuelve con 1 de 15. No se pierde nada.
+
+**Queda registrado.** Cada reinicio escribe un movimiento `ajuste_manual` con
+`temporal_origen=true`, `temporal_destino=false` y
+`detalle={"accion":"reiniciar_pasadas","origen":"visor","alcance":...}`. Un contador que se
+puede poner a cero sin rastro no sirve de nada en un sistema de trazabilidad.
+
+### Dos cosas que había que decidir, y por qué así
+
+**`ajuste_manual` ya existía en el ENUM** (`010_traza.sql`), así que no hace falta
+migración. Importa porque `ALTER TYPE ... ADD VALUE` no se puede usar en el mismo fichero
+que lo introduce, y un valor nuevo de ENUM el día de una demostración es exactamente lo que
+no se hace.
+
+**Esta API ya no es de sólo lectura.** El `SET TRANSACTION READ ONLY` de `_leer_sync` se
+puso para que no pudiera escribir por descuido; la excepción **no se cuela por ahí**, va por
+un `_escribir_sync` propio que se ve en el `grep` y que sólo usa esta ruta. Sigue **sin
+autenticación**, como `/estado`: escucha en la red interna de la Pi. Si algún día hace falta
+una segunda escritura, es el momento de replantear eso.
+
+**Y el `post()` del cliente del visor vacía la caché entera.** Con `CACHE_TTL_SECONDS=10`,
+sin eso quien pulsa el botón ve diez segundos las cifras de antes y concluye que no ha
+funcionado.
