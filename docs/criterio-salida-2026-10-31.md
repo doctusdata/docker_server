@@ -285,10 +285,21 @@ ciclo — ahí alguien ha entrado.
 IRFID_ORQ_PARALELO=false
 IRFID_ORQ_VENTANA_S=90
 IRFID_ORQ_PAUSA_S=5
-IRFID_ORQ_PERIODO_S=190          # 90+5+90=185: ciclos encadenados, sin hueco muerto
+IRFID_ORQ_PERIODO_S=190          # ciclos encadenados, sin hueco muerto
 IRFID_CICLOS_PARA_CIRCULANTE=2
 IRFID_MINUTOS_PARA_CIRCULANTE=60 # no interviene; queda de tope
 ```
+
+> **Dos correcciones del 5/11**, medidas en `estudio-deteccion-2026-11-05.md`:
+>
+> 1. **La cuenta «90+5+90=185» estaba mal.** `ciclo.py:244` aplica la pausa también tras el
+>    último lector, así que la pasada es `N×(ventana+pausa)` = 2×(90+5) = 190, y con el
+>    HTTP, **193 s medidos**. El periodo de 190 queda por debajo, luego no gobierna: los
+>    ciclos van encadenados, que era el efecto buscado, pero por otra razón.
+> 2. **La detección no es «una pasada».** Una etiqueta retirada a mitad de ciclo ya fue
+>    leída en él, así que cuesta **entre uno y dos ciclos**: media 1,5, que son **289 s
+>    medidos** sobre 2.188 episodios. La sala corre hoy con
+>    `IRFID_CICLOS_PARA_CIRCULANTE=1`, no con el 2 de aquí.
 
 **`IRFID_ORQ_PARALELO` hubo que declararlo en el compose.** El bloque `irfid-orquestador`
 **enumera** las `IRFID_ORQ_*`, no las hereda del ancla, así que ponerlo sólo en el `.env`
