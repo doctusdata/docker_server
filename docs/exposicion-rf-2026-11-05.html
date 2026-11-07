@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>RoomFID · Revisión de exposición a radiofrecuencia</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+@page {
+  size: A4; margin: 20mm 18mm 18mm 18mm;
+  @bottom-center { content: counter(page) " / " counter(pages);
+                   font: 8pt "Helvetica Neue", sans-serif; color: #8a8a8a; }
+  @bottom-left   { content: "RoomFID · Revision de exposicion a RF · 5/11/2026";
+                   font: 7.5pt "Helvetica Neue", sans-serif; color: #a8a8a8; }
+}
+body { font: 10.2pt/1.52 "Helvetica Neue", Helvetica, Arial, sans-serif;
+       color: #1d1d1f; hyphens: auto; }
+h1 { font-size: 19pt; line-height: 1.22; margin: 0 0 6pt; color: #0b2d4d;
+     border-bottom: 2.5px solid #0b2d4d; padding-bottom: 7pt; }
+h2 { font-size: 13pt; margin: 20pt 0 6pt; color: #0b2d4d;
+     border-bottom: 1px solid #d4dde5; padding-bottom: 3pt; page-break-after: avoid; }
+h3 { font-size: 11pt; margin: 13pt 0 4pt; color: #22384d; page-break-after: avoid; }
+p, li { orphans: 2; widows: 2; }
+strong { color: #0b2d4d; }
+/* La cita inicial es la salvaguarda del informe: tiene que verse como tal. */
+blockquote { margin: 10pt 0 16pt; padding: 9pt 12pt; background: #fbf6e8;
+             border-left: 3.5px solid #c8a63e; font-size: 9.3pt; color: #4a3f20; }
+blockquote p { margin: 0 0 5pt; } blockquote p:last-child { margin: 0; }
+table { border-collapse: collapse; width: 100%; margin: 10pt 0 14pt;
+        font-size: 9.2pt; page-break-inside: avoid; }
+th { background: #0b2d4d; color: #fff; text-align: left; padding: 5pt 7pt;
+     font-weight: 600; }
+td { padding: 4.5pt 7pt; border-bottom: 1px solid #e3e9ee; vertical-align: top; }
+tr:nth-child(even) td { background: #f7f9fb; }
+pre { background: #f5f7f9; border: 1px solid #dde4ea; border-left: 3px solid #5b7794;
+      padding: 8pt 10pt; font: 8.6pt/1.42 "SF Mono", Menlo, monospace;
+      white-space: pre-wrap; page-break-inside: avoid; margin: 9pt 0 13pt; }
+code { font: 0.9em "SF Mono", Menlo, monospace; background: #f0f3f6;
+       padding: 0.5pt 3pt; border-radius: 2.5px; }
+pre code { background: none; padding: 0; }
+ol, ul { padding-left: 17pt; } li { margin-bottom: 3.5pt; }
+a { color: #0b2d4d; text-decoration: none; }
+h1.title { display: none; }
+
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">RoomFID · Revisión de exposición a
+radiofrecuencia</h1>
+</header>
+<h1 id="es-perjudicial-la-potencia-de-rf-que-usamos-revisión">¿Es
+perjudicial la potencia de RF que usamos? Revisión</h1>
+<blockquote>
+<p>5/11/2026. Revisión a petición del cliente. Calculada sobre la
+configuración <strong>documentada y verificada</strong> de la
+instalación, con los límites de ICNIRP 2020, la Recomendación
+1999/519/CE y la Directiva 2013/35/UE. <strong>No sustituye a la
+evaluación de riesgos que la Directiva obliga al empleador a hacer, ni a
+la declaración de conformidad de Keonn.</strong> Al final se dice
+exactamente qué falta para cerrarla.</p>
+</blockquote>
+<h2 id="respuesta-corta">Respuesta corta</h2>
+<p><strong>No, no hay riesgo de exposición para las personas.</strong> A
+más de <strong>30 cm</strong> de la cara de una antena ya se está por
+debajo del límite para <strong>público general</strong>, que es el más
+estricto, y eso sin contar el ciclo de trabajo; contándolo son
+<strong>10-15 cm</strong>. Nadie trabaja con el torso pegado a una
+antena de estantería.</p>
+<p><strong>Pero la revisión ha encontrado dos cosas que sí hay que
+atender</strong>, y ninguna es el calentamiento de tejidos:</p>
+<ol type="1">
+<li><strong>Posible incumplimiento del límite legal de emisión</strong>
+(ETSI EN 302 208): estamos entre 2,4 y 3,0 W ERP frente a un techo de
+<strong>2 W ERP</strong>. Es un problema de certificación, no de salud.
+<strong>Es el punto a escalar.</strong></li>
+<li><strong>Implantes activos</strong> (marcapasos, DAI). Es el riesgo
+real en un hospital, ocurre a potencias muy inferiores a las que
+calientan tejido, y se gestiona con <strong>distancia de
+separación</strong>, no con potencia.</li>
+</ol>
+<h2 id="lo-que-usamos-de-verdad">Lo que usamos de verdad</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Valor</th>
+<th>Fuente</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Banda</td>
+<td>865,6-867,6 MHz (λ = 34,6 cm)</td>
+<td><code>estudio-cobertura</code>, config del simulador</td>
+</tr>
+<tr>
+<td>Potencia conducida, lectores de inventario</td>
+<td><strong>31,5 dBm = 1,41 W</strong> (su máximo)</td>
+<td><code>lectores-mqtt.md:45</code>, confirmado el 1/11</td>
+</tr>
+<tr>
+<td>Antena</td>
+<td><strong>Advantenna-p12</strong>, 5,4 dBiC, haz 60°×90°</td>
+<td><code>ARQUITECTURA.md:264</code></td>
+</tr>
+<tr>
+<td>Antenas que irradian</td>
+<td><strong><code>.157</code>: 4 · <code>.158</code>: 2</strong></td>
+<td>medido: <code>traza.lector_antena</code></td>
+</tr>
+<tr>
+<td>Ciclo de trabajo del lector</td>
+<td>90 s de cada 193 s = <strong>46,6 %</strong></td>
+<td>medido</td>
+</tr>
+<tr>
+<td>Lector de puerta</td>
+<td>potencia <strong>15</strong></td>
+<td><code>lector-puerta.md:135</code></td>
+</tr>
+<tr>
+<td>Lector de papelera</td>
+<td><strong>16 dBm</strong></td>
+<td><code>CLAUDE.md</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Las antenas 3 y 4 del <code>.158</code> no irradian</strong>:
+0 lecturas y 154 ventanas mudas. O están deshabilitadas o no están
+conectadas. Conviene confirmarlo —un puerto activo contra un cable sin
+terminar es mala práctica— y además es un asunto de cobertura.</p>
+<p><strong>Dato que tranquiliza:</strong> los dos lectores junto a los
+que una persona <strong>sí</strong> se pone —el de la puerta, por el que
+se pasa, y el de la papelera— son los más débiles, <strong>unos 15 dB
+por debajo</strong> (≈30 veces menos potencia) que los de estantería,
+que apuntan a los estantes.</p>
+<h3 id="potencia-radiada">Potencia radiada</h3>
+<pre><code>EIRP = 31,5 dBm − perdida_cable + 5,4 dBiC
+ERP  = EIRP − 2,15 dB
+
+sin perdida de cable:   EIRP 36,9 dBm = 4,90 W   -&gt;  ERP 34,75 dBm = 2,98 W
+con 1 dB de cable:      EIRP 35,9 dBm = 3,89 W   -&gt;  ERP 33,75 dBm = 2,37 W</code></pre>
+<p>Todo lo que sigue usa el <strong>peor caso, 4,90 W EIRP</strong>.</p>
+<h2 id="1--exposición-de-personas-no-hay-problema-y-por-cuánto">1 ·
+Exposición de personas: no hay problema, y por cuánto</h2>
+<p>Niveles de referencia a 866 MHz (densidad de potencia, promediada en
+30 min, cuerpo completo):</p>
+<pre><code>publico general   S = f/200 =  4,33 W/m²     (E = 40,5 V/m)
+profesional       S = f/40  = 21,7  W/m²     (E = 88,3 V/m)</code></pre>
+<p>Con <code>S = EIRP / 4πr²</code>, la distancia a la que se baja de
+cada límite:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Público general</th>
+<th>Profesional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mientras esa antena transmite</strong></td>
+<td><strong>30 cm</strong></td>
+<td>13 cm</td>
+</tr>
+<tr>
+<td>Promediado 30 min · <code>.157</code> (4 antenas, 11,7 %)</td>
+<td><strong>10 cm</strong></td>
+<td>5 cm</td>
+</tr>
+<tr>
+<td>Promediado 30 min · <code>.158</code> (2 antenas, 23,3 %)</td>
+<td><strong>15 cm</strong></td>
+<td>7 cm</td>
+</tr>
+</tbody>
+</table>
+<p>El lector <strong>multiplexa</strong>: sólo una antena irradia a la
+vez, así que cada antena transmite una fracción del 46,6 %. Aun
+suponiendo que irradiaran todas a la vez, el límite de público general
+se cumpliría a <strong>21 cm</strong>. <strong>La conclusión no depende
+de ese supuesto.</strong></p>
+<blockquote>
+<p>Por debajo de ~15 cm se está en el campo cercano de un parche de este
+tamaño y la fórmula de espacio libre no vale. Por eso la respuesta de
+ingeniería no es un número fino, es una <strong>distancia de respeto de
+30 cm</strong>, que cubre el caso peor con margen.</p>
+</blockquote>
+<p><strong>En resumen: para la exposición de personas, esta instalación
+está holgadamente dentro de los límites.</strong> Y nótese que los
+límites de público general ya incluyen un factor 50 de seguridad sobre
+el umbral de efecto térmico.</p>
+<h2
+id="2--el-hallazgo-que-sí-hay-que-atender-el-límite-legal-de-emisión">2
+· El hallazgo que sí hay que atender: el límite legal de emisión</h2>
+<p><strong>ETSI EN 302 208</strong> fija para 865,6-867,6 MHz un máximo
+de <strong>2 W ERP (33 dBm)</strong>. Las cifras documentadas dan
+<strong>2,37-2,98 W ERP</strong>, es decir <strong>0,8 a 1,8 dB por
+encima</strong>.</p>
+<p><strong>No es un riesgo para la salud</strong> —está 10 veces por
+debajo de donde empezaría a serlo— pero sí es un asunto de conformidad
+CE y de responsabilidad del producto, y en un hospital eso pesa.</p>
+<p><strong>Antes de dar nada por incumplido hay que comprobar dos
+cosas</strong>, y no se pueden comprobar desde aquí:</p>
+<ul>
+<li><strong>El perfil de región del lector.</strong> Si el firmware está
+en modo ETSI, puede estar limitando el ERP él mismo contando una
+ganancia de antena declarada. En ese caso «31,5 dBm» no significa lo que
+parece y no hay nada que corregir.</li>
+<li><strong>La declaración de conformidad de Keonn</strong> para la
+combinación AdvanReader-m4 + Advantenna-p12: dice qué pares
+potencia/antena están certificados. <strong>Ese documento, y no este
+cálculo, es la respuesta legal.</strong></li>
+</ul>
+<h3 id="si-hay-que-bajar-la-potencia-a-cuánto">Si hay que bajar la
+potencia, a cuánto</h3>
+<pre><code>potencia_conducida_max = 33 + 2,15 − 5,4 + perdida_cable = 29,8 + perdida_cable  dBm</code></pre>
+<p>Es decir <strong>29,5-30,5 dBm</strong> en vez de 31,5: una bajada de
+<strong>1 a 2 dB</strong>.</p>
+<p><strong>Y cuesta cobertura, que es la restricción que manda en este
+sistema.</strong> El enlace lo limita la sensibilidad de la etiqueta
+(−24 dBm), así que el alcance va como <code>√P</code>: 1,8 dB menos son
+<strong>~18 % de alcance</strong>. Sobre una cobertura que hoy está en
+el 99,73 % y con 31 etiquetas crónicas al límite de sensibilidad, eso se
+va a notar.</p>
+<p><strong>Por eso la vía correcta no es la potencia, es la posición de
+las antenas</strong> —el trabajo de
+<code>etiquetas-a-recolocar-2026-11-03.md</code>—. El estudio de
+cobertura ya concluyó que <strong>la potencia no es una palanca porque
+ya estamos en el máximo</strong>; lo que esta revisión añade es que
+probablemente estamos <strong>por encima</strong> del máximo legal, así
+que recolocar deja de ser una mejora y pasa a ser <strong>la forma de
+poder cumplir sin perder cobertura</strong>.</p>
+<h2 id="3--el-riesgo-real-en-un-hospital-implantes-activos">3 · El
+riesgo real en un hospital: implantes activos</h2>
+<p>Un marcapasos o un DAI puede verse perturbado por RFID UHF
+<strong>muy por debajo</strong> de las potencias que calientan tejido:
+el mecanismo es interferencia electromagnética, no absorción. Está
+documentado en la literatura y es la razón de que las instalaciones de
+RFID en hospitales trabajen con distancias de separación.</p>
+<p>Campo eléctrico de nuestras antenas,
+<code>E = √(30·EIRP)/r = 12,1/r</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Distancia</th>
+<th>Campo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>30 cm</td>
+<td>40 V/m</td>
+</tr>
+<tr>
+<td>1 m</td>
+<td>12 V/m</td>
+</tr>
+<tr>
+<td>2 m</td>
+<td>6 V/m</td>
+</tr>
+<tr>
+<td><strong>4 m</strong></td>
+<td><strong>3 V/m</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lo que hay que aplicar:</strong></p>
+<ul>
+<li><strong>30 cm mínimo</strong> entre cualquier antena y una persona
+con implante cardiaco. Es la distancia que coincide con el límite de
+público general, lo cual simplifica: <strong>una sola regla de 30 cm
+cubre las dos cosas.</strong></li>
+<li><strong>Señalización</strong> en la sala advirtiendo de RFID activo,
+que es lo que permite a una persona con implante tomar sus precauciones.
+Sin señal, la medida no existe.</li>
+<li><strong>Equipos médicos a menos de ~4 m</strong>: la inmunidad
+general que exige IEC 60601-1-2 es <strong>3 V/m</strong>, y nuestro
+campo la supera hasta los 4 m (y los 10 V/m de los equipos de soporte
+vital, hasta 1,2 m). En un almacén sin pacientes ni equipos de soporte
+vital no aplica, <strong>pero hay que mirar qué hay al otro lado de las
+paredes</strong>: un tabique de pladur no atenúa casi nada a 866
+MHz.</li>
+</ul>
+<h2 id="4--mitigaciones-y-dos-que-ya-están-puestas-sin-pretenderlo">4 ·
+Mitigaciones, y dos que ya están puestas sin pretenderlo</h2>
+<p><strong>Ya funcionando:</strong></p>
+<ol type="1">
+<li><p><strong>El enclavamiento por acceso ya existe.</strong>
+<code>IRFID_ORQ_ABORTAR_POR_ACCESO</code> está en <code>true</code> (por
+defecto, y no se sobreescribe en la sala): cuando alguien pasa el carnet
+por la puerta, <strong>se corta la ventana de lectura en curso</strong>.
+Se hizo por calidad del dato —una persona dentro tapa antenas— pero es,
+gratis, <strong>la mejor mitigación posible: los lectores dejan de
+transmitir cuando entra una persona.</strong></p>
+<p><strong>Con una salvedad importante:</strong> depende del lector de
+puerta, que hoy está <strong>a medias</strong>
+(<code>lector-puerta.md</code>). Si no registra accesos, el
+enclavamiento no dispara. <strong>Terminar de configurarlo deja de ser
+sólo trazabilidad y pasa a ser una medida de
+seguridad.</strong></p></li>
+<li><p><strong>El ciclo de trabajo y la multiplexación</strong> ya
+dividen la exposición promediada entre 4 y 8.</p></li>
+</ol>
+<p><strong>Por hacer, en orden de coste:</strong></p>
+<ol start="3" type="1">
+<li><strong>Señalización</strong> y una distancia de respeto de
+<strong>30 cm</strong> marcada físicamente (borde de estante, canaleta,
+etiqueta). Coste casi nulo.</li>
+<li><strong>Orientar el haz</strong> de 60°×90° a los estantes y nunca a
+pasillos, sillas o puestos de trabajo. Revisar las seis antenas con ese
+criterio.</li>
+<li><strong>Confirmar el perfil de región y la declaración de
+conformidad de Keonn.</strong> Esto es lo que decide si hay algo que
+corregir en potencia.</li>
+<li><strong>Aclarar las antenas 3 y 4 del <code>.158</code></strong>:
+deshabilitadas está bien; conectadas a un cable sin terminar, no.</li>
+<li><strong>Si procede, bajar a 29,5-30,5 dBm</strong>, y compensar la
+pérdida de alcance <strong>recolocando</strong>, no subiendo
+potencia.</li>
+</ol>
+<h2 id="qué-falta-para-cerrar-esto-formalmente">Qué falta para cerrar
+esto formalmente</h2>
+<p>Esta revisión es un <strong>cálculo de ingeniería sobre valores
+documentados</strong>. Para una respuesta que se pueda entregar a un
+cliente sanitario hacen falta tres cosas que no están aquí:</p>
+<ul>
+<li><strong>La declaración de conformidad de Keonn</strong> para este
+par lector/antena, y el ajuste de región del lector leído de su propia
+interfaz.</li>
+<li><strong>Una medida de campo con sonda calibrada</strong> en los
+puntos donde hay personas. Es lo único que sustituye a la fórmula de
+espacio libre en el campo cercano, y lo único que vale si alguien
+pregunta por escrito.</li>
+<li><strong>La evaluación de riesgos por campos
+electromagnéticos</strong> que la <strong>Directiva 2013/35/UE</strong>
+obliga a hacer al empleador, con atención específica a trabajadores con
+implantes activos y a trabajadoras embarazadas. <strong>Es obligación
+del hospital, no nuestra</strong>, pero necesita de nosotros las cifras
+de arriba.</li>
+</ul>
+</body>
+</html>
