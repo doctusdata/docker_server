@@ -29,16 +29,49 @@ construyen aquí, en la máquina de desarrollo, y allí solo se cargan.
 # 1. Construir las imágenes para ARM (la primera vez tarda: emulación)
 ./construir-arm64.sh
 
-# 2. Empaquetar, con los datos de la Pi actual
-./empaquetar.sh --desde andy@192.168.0.59
+# 2. Empaquetar. SIN datos: la Pi nueva arranca vacía.
+./empaquetar.sh
 
 # 3. Copiar e instalar
 scp roomfid-pi-*.tar.gz andy@NUEVA_IP:~/
 ssh andy@NUEVA_IP 'tar xzf roomfid-pi-*.tar.gz && cd roomfid-pi && ./instalar.sh'
+
+# 4. Vincular con la gestión (el instalador explica cómo)
+#    En gestión: Almacenes → <el almacén> → Vincular Pi
+ssh andy@NUEVA_IP 'cd roomfid && docker compose exec irfid-almacen \
+  python -m irfid vincular --gestion https://TU-GESTION --codigo XXXX-XXXX'
 ```
 
 El instalador pide editar el `.env` con las credenciales reales (no viajan en el
-paquete) y luego se vuelve a lanzar para restaurar la base.
+paquete) y luego se vuelve a lanzar.
+
+### Una Pi nueva ya no necesita el volcado de otra
+
+Esto cambió con el enfoque C de la sincronización. Antes había que llevarse la base
+de una Pi existente (`--desde`) porque el inventario vivía ahí y no había otra forma
+de que la Pi nueva supiera qué etiquetas existen. Ahora **el inventario lo tiene la
+plataforma de gestión**, que es la única fuente: la Pi arranca vacía, aplica su
+esquema con `python -m irfid migrar` y pide lo suyo al vincularse.
+
+Tres cosas mejoran por eso:
+
+- **No se arrastra el esquema legacy** (`EPC_master`, `EPC_readings`, `Bin`) a una
+  instalación nueva que no lo necesita;
+- **no se copian datos de otro hospital** a una Pi que va a otro sitio, que además
+  de incómodo era un problema de confidencialidad;
+- el paquete baja de ~183 MB a solo las imágenes y la configuración.
+
+**`--desde` sigue existiendo**, y es lo correcto para un caso concreto: mudar una
+instalación que ya estaba funcionando con el sistema antiguo y cuyo histórico hay
+que conservar. Para eso trae también el esquema legacy, que es justo lo que se
+quiere ahí.
+
+```bash
+./empaquetar.sh --desde andy@192.168.0.59     # mudanza, no instalación nueva
+```
+
+Con volcado, el instalador **no** propone vincular: la vinculación viene dentro de
+la base restaurada, y repetirla rotaría el token del almacén sin necesidad.
 
 ## Actualizar después
 
@@ -62,7 +95,8 @@ corregidos en los scripts:
 - **`mosquitto_passwd -c` no sobrescribe** un fichero existente (`File exists`). Se
   borra antes de generarlo.
 - **El `initdb` espera `/volcado/produccion.sql` sin comprimir.** El instalador
-  descomprime el volcado con ese nombre.
+  descomprime el volcado con ese nombre. Solo aplica al caso de mudanza
+  (`--desde`): sin volcado no interviene.
 
 ## Cuatro cosas que conviene saber
 

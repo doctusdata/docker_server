@@ -81,3 +81,6 @@ docker-compose.yml.bak
 
 # Datos de simulacion
 .sim-data/
+
+# Config del stack heredado: lleva credenciales en claro
+RoomFID*/**/config/app.json

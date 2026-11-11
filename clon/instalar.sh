@@ -88,6 +88,11 @@ EOF
 chmod +x "$DESTINO/regenerar-passwd.sh"
 
 # --- 4. Datos ---------------------------------------------------------------------------
+#
+# Lo normal desde el enfoque C es que NO haya volcado: una Pi nueva arranca vacia,
+# aplica su esquema y pide su inventario a la plataforma de gestion al vincularse. El
+# volcado solo tiene sentido para mudar una instalacion que ya estaba funcionando con
+# el sistema antiguo, y en ese caso trae tambien el esquema legacy.
 if [ -f "$AQUI/datos/gestion_rfid.sql.gz" ]; then
     echo "== Restaurando la base =="
     if [ "${FALTA_ENV:-0}" = "1" ]; then
@@ -134,5 +139,33 @@ echo "Arrancar:   cd $DESTINO && docker compose --profile orquestador up -d"
 echo "Ver:        docker compose ps"
 echo "Registros:  docker compose logs -f irfid-almacen"
 echo
+
+# --- 6. Vinculacion -----------------------------------------------------------------
+# Solo si la Pi arranca vacia. Con volcado, la vinculacion viene dentro de la base
+# restaurada y repetirla rotaria el token del almacen sin necesidad.
+if [ ! -f "$AQUI/datos/gestion_rfid.sql.gz" ]; then
+    echo "== Siguiente paso: vincular con la gestion =="
+    echo
+    echo "Esta Pi arranca VACIA. Su inventario no se copia de ningun sitio: lo pide"
+    echo "a la plataforma de gestion, y para eso necesita un codigo de vinculacion."
+    echo
+    echo "  1. En gestion:  Almacenes -> <este almacen> -> Vincular Pi"
+    echo "     Anota el codigo (XXXX-XXXX). Caduca en 24 h y es de un solo uso."
+    echo
+    echo "  2. Aqui:"
+    echo "     cd $DESTINO && docker compose exec irfid-almacen \\"
+    echo "       python -m irfid vincular --gestion https://TU-GESTION --codigo XXXX-XXXX"
+    echo
+    echo "  Sin codigo a mano, la Pi puede presentarse con su numero de serie y"
+    echo "  esperar a que alguien la apruebe:"
+    echo "     ... python -m irfid vincular --gestion https://TU-GESTION"
+    echo
+    echo "  Comprobar:  curl -s localhost:8090/health | grep -i vincul"
+    echo
+    echo "  Es la Pi quien llama: la gestion no necesita alcanzar esta maquina, asi"
+    echo "  que esto funciona desde la red interna del hospital."
+    echo
+fi
+
 echo "Puertos:  5432 base · 1883 MQTT · 3000 API · 8020 visor · 8080 monitor"
 echo "          8025 correo · 8090 irfid · 8091 orquestador · 8092 papeleras"
