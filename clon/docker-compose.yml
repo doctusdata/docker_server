@@ -121,20 +121,14 @@ services:
     volumes:
       - irfid-spool:/data/spool
       - ./topologia.json:/app/topologia.json:ro
-      # **PARCHE TEMPORAL — ver parches/LEEME.md.** Montado y no copiado dentro a
-      # proposito: `docker cp` deja el fichero en la capa de escritura del contenedor, y
-      # `docker compose up -d` lo destruye al recrearlo. Paso el 1/11 al aplicar los
-      # umbrales: la cifra de "en observacion" desaparecio del panel. Montado sobrevive.
+      # **Sin montajes de parches, y asi tiene que seguir.** Hasta el 11/11 aqui se
+      # montaban `api.py` y `repo.py` encima de la imagen. Ya no hace falta: la imagen
+      # los lleva dentro, con la gracia de devolucion, las dos defensas del canal y las
+      # migraciones hasta la 022. Comprobado dentro del contenedor antes de quitarlos.
       #
-      # QUITAR en cuanto se despliegue la imagen que ya lleve el grupo dentro: un montaje
-      # tapa lo que traiga la imagen **en silencio**, asi que si se queda, la Pi seguiria
-      # ejecutando este fichero y nadie lo notaria.
-      - ./parches/api.py:/usr/local/lib/python3.12/site-packages/irfid/inventario/api.py:ro
-      # Y este NO es cosmetico: es la logica del ciclo. Una ventana `corta` ya no
-      # invalida el ciclo -son artefactos de 0-2 s del apagado del lector, y al
-      # invalidar se llevaban la ventana buena de 90 s que esperaba pareja-.
-      # Imprescindible para leer en serie. Commiteado en irfid 832fce7.
-      - ./parches/repo.py:/usr/local/lib/python3.12/site-packages/irfid/almacen/repo.py:ro
+      # **No volver a montar codigo aqui.** Un montaje tapa lo que trae la imagen **en
+      # silencio**: la Pi ejecutaria el fichero de fuera y nadie lo notaria. Si hay que
+      # cambiar algo, se reconstruye la imagen con construir-arm64.sh.
     ports:
       - "8090:8090"
       # API de papeleras: por aqui entran las sesiones de los terminales
@@ -179,16 +173,14 @@ services:
       ALMACEN_API_URL: http://irfid-almacen:8090
       INVENTARIO_API_URL: http://irfid-almacen:8093
       CORS_ORIGINS: http://localhost:8020
-    volumes:
-      # Mismo caso que el de irfid: los estaticos del panel nuevo, montados para que no
-      # se los lleve una recreacion. Ver parches/LEEME.md.
-      - ./parches/web:/app/web:ro
-      # Y el backend: el boton de reiniciar observacion necesita una ruta POST que la
-      # imagen no trae. `rfid_client` va con el porque ahi esta el `post()` que ademas
-      # tira la cache -- con TTL de 10 s, sin eso la pantalla ensena las cifras de antes
-      # justo despues de pulsar.
-      - ./parches/visor-inventario.py:/app/app/routers/inventario.py:ro
-      - ./parches/visor-rfid-client.py:/app/app/rfid_client.py:ro
+      # 3 s y no los 10 por defecto. La cache del backend se suma a la relectura del
+      # navegador, asi que con 10 un numero tardaba hasta 40 s en cambiar y la tarjeta
+      # y la tabla podian discrepar todo ese rato. Medido el 4/11: tres peticiones
+      # seguidas devolvian el mismo `generado_at`. Cuesta una consulta mas cada pocos
+      # segundos contra una API de **solo lectura**: barato.
+      CACHE_TTL_SECONDS: "3"
+    # Sin volumenes: el panel compilado, la ruta de devolver y el `post()` que tira la
+    # cache van dentro de la imagen desde el 11/11. Antes se montaban desde `parches/`.
     ports:
       - "8020:8020"
 

@@ -165,6 +165,12 @@ services:
       # 127.0.0.1: dentro de este contenedor eso seria el visor mismo.
       ALMACEN_API_URL: http://irfid-almacen:8090
       CORS_ORIGINS: http://localhost:8020
+      # 3 s y no los 10 por defecto. La cache del backend se suma a la relectura del
+      # navegador, asi que con 10 un numero tardaba hasta 40 s en cambiar y la tarjeta
+      # y la tabla podian discrepar todo ese rato. Medido el 4/11: tres peticiones
+      # seguidas devolvian el mismo `generado_at`. Cuesta una consulta mas cada pocos
+      # segundos contra una API de **solo lectura**: barato.
+      CACHE_TTL_SECONDS: "3"
     ports:
       - "8020:8020"
 
