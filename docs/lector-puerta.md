@@ -9,9 +9,47 @@ abajo. Con un solo lector no se pueden tener las dos funciones a la vez.
 
 ## Para qué sirve
 
-Lee los **carnets** de quien entra al almacén, no los artículos. Eso es lo que permite
-decir *quién* se llevó algo: al cerrar un ciclo con faltantes, se les atribuye el último
-usuario que pasó la puerta.
+**Desde el 14/11/2026 lee personas y material.** Antes solo leía carnets, y quién se
+llevaba algo se deducía al cerrar un ciclo con faltantes: se le atribuía al último que
+había pasado la puerta, varios minutos después. Ahora es el control de salida (irfid,
+migración `023_bloqueo_puerta.sql`):
+
+1. Pasa una **pulsera del personal** por la puerta: se registra el acceso y se **paran
+   las antenas interiores**.
+2. Durante **2 minutos desde el último paso de pulsera** (`IRFID_ORQ_PAUSA_ACCESO_S`), todo
+   el material que lea la antena de la puerta **pasa a `en_transito` en el acto**,
+   atribuido a esa persona. También una caja leída hasta 15 s antes que la pulsera.
+3. **Sin pulsera alrededor no se hace nada**: material solo en la puerta es una lectura
+   cruzada o algo que pasa cerca.
+4. Lo que sale así queda **bloqueado**: una lectura suelta dentro no lo devuelve. Vuelve a
+   `almacen` tras **3 ciclos válidos seguidos** en los que se lee dentro
+   (`IRFID_CICLOS_CONFIRMAR_RETORNO`). Un ciclo válido sin verlo reinicia la cuenta; uno
+   inválido (aborto, cobertura) no cuenta.
+5. Pasados los 2 minutos se reanuda la lectura, y la ausencia se sigue detectando como
+   siempre.
+
+La salida y su vuelta se encolan hacia la gestión por el canal de estados
+(`traza.envio_estado`), con la pulsera en el detalle. **Hasta que la gestión acepte
+`en_transito` y `almacen` en `/sync/estados`, esos envíos esperan en la cola.**
+
+No hay dirección: con una sola antena de puerta no se distingue entrar de salir. Una caja
+que entra durante la sesión también queda bloqueada, y la liberan los ciclos.
+
+### Las pulseras se configuran por instalación
+
+Qué es persona y qué es material lo decide el **prefijo del EPC**. Cada hospital tiene sus
+pulseras, así que va en el `.env` de la Pi, no en el código:
+
+```
+IRFID_PUERTA_PREFIJOS_PERSONA=["ce0028","<prefijo de las pulseras>"]
+```
+
+Por defecto solo `ce0028` (los carnets). **Una pulsera que no esté aquí se trata como
+material desconocido**: no abre sesión y no saca nada. Un EPC que no es persona ni material
+nuestro se apunta en `traza.epc_desconocido` y ya no aborta la pasada, como pasaba antes.
+
+Tras cambiar el `.env`, **recrear** (no reiniciar) los dos procesos:
+`docker compose up -d irfid-almacen irfid-orquestador`.
 
 ## Red y MQTT
 
@@ -61,9 +99,13 @@ body += '}';
 | Use antenna in tagTTL | **activado** |
 | Re-send on COMM error | desactivado |
 
-## Filtro EPC — solo carnets
+## Filtro EPC — HAY QUE QUITARLO
 
-Sin esto leería también los artículos que pasan por la puerta y los tomaría por personas.
+**Con el control de salida, el filtro del lector tiene que estar vacío.** Si no, la antena
+de la puerta solo ve carnets y el material sale sin que nadie se entere. La distinción
+entre persona y material la hace ahora el software, por prefijo (ver arriba).
+
+Lo que tenía en la configuración original, por si hay que volver atrás:
 
 | | |
 |---|---|
@@ -73,8 +115,14 @@ Sin esto leería también los artículos que pasan por la puerta y los tomaría 
 | Use SW filter only | desactivado (degrada el rendimiento) |
 | Allow Extended EPC Filter | desactivado |
 
-Encaja con los carnets de `user_room`, que empiezan por `ce0028…` — por ejemplo
+Encajaba con los carnets de `user_room`, que empiezan por `ce0028…` — por ejemplo
 `ce0028121900000000002f68`, el de Carlos Garcia.
+
+**Antes de dar el control por bueno, medir las lecturas cruzadas.** Sin filtro, la antena
+de la puerta puede leer cajas de las estanterías cercanas. Fuera de una sesión no pasa
+nada, pero durante los 2 minutos de una pulsera esas cajas saldrían a `en_transito` (y
+volverían a los 3 ciclos). Se ajusta con la potencia y la sensibilidad de la antena de
+puerta.
 
 ## Alarma con consulta a base
 

@@ -37,6 +37,16 @@ x-irfid-env: &irfid-env
   # A 0 se desactiva. Va en el ancla porque irfid-almacen la hereda de aqui.
   IRFID_GRACIA_DEVOLUCION_MIN: ${IRFID_GRACIA_DEVOLUCION_MIN:-30}
   IRFID_MINUTOS_PARA_CIRCULANTE: ${IRFID_MINUTOS_PARA_CIRCULANTE:-30}
+  # Control de salida por la puerta (irfid 023). Ver docs/lector-puerta.md.
+  # Que EPC son personas en la antena de la puerta: carnets y pulseras del personal.
+  # CAMBIA CON CADA HOSPITAL: se pone en el .env con el prefijo de sus pulseras.
+  IRFID_PUERTA_PREFIJOS_PERSONA: '${IRFID_PUERTA_PREFIJOS_PERSONA:-["ce0028"]}'
+  # Tras una pulsera, las antenas interiores se paran este tiempo, y todo lo que lea la
+  # puerta mientras tanto sale a en_transito. Lo usan almacen y orquestador: por eso va
+  # en el ancla, que heredan los dos.
+  IRFID_ORQ_PAUSA_ACCESO_S: ${IRFID_ORQ_PAUSA_ACCESO_S:-120}
+  # Lo que saco la puerta vuelve tras este numero de ciclos validos SEGUIDOS leyendose.
+  IRFID_CICLOS_CONFIRMAR_RETORNO: ${IRFID_CICLOS_CONFIRMAR_RETORNO:-3}
   IRFID_HORAS_ALERTA_TEMPORAL: ${IRFID_HORAS_ALERTA_TEMPORAL:-24}
   IRFID_VENTANA_MIN_S: ${IRFID_VENTANA_MIN_S:-30}
   IRFID_VENTANA_GAP_S: ${IRFID_VENTANA_GAP_S:-20}
