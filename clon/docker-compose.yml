@@ -44,6 +44,9 @@ x-irfid-env: &irfid-env
   IRFID_ORQ_PAUSA_ACCESO_S: ${IRFID_ORQ_PAUSA_ACCESO_S:-120}
   # Lo que saco la puerta vuelve tras este numero de ciclos validos SEGUIDOS leyendose.
   IRFID_CICLOS_CONFIRMAR_RETORNO: ${IRFID_CICLOS_CONFIRMAR_RETORNO:-3}
+  # Lo que deduce la ausencia (salida por ciclos y su vuelta) va a la gestion solo tras
+  # sostenerse este numero de ciclos validos seguidos; lo que oscila no se manda (irfid 024).
+  IRFID_CICLOS_ESTABLE_ENVIO: ${IRFID_CICLOS_ESTABLE_ENVIO:-3}
   IRFID_HORAS_ALERTA_TEMPORAL: ${IRFID_HORAS_ALERTA_TEMPORAL:-24}
   IRFID_VENTANA_MIN_S: ${IRFID_VENTANA_MIN_S:-30}
   IRFID_VENTANA_GAP_S: ${IRFID_VENTANA_GAP_S:-20}

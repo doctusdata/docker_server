@@ -32,6 +32,14 @@ La salida y su vuelta se encolan hacia la gestión por el canal de estados
 (`traza.envio_estado`), con la pulsera en el detalle. **Hasta que la gestión acepte
 `en_transito` y `almacen` en `/sync/estados`, esos envíos esperan en la cola.**
 
+**Lo que no pasa por la puerta sigue el proceso de siempre**: si un ciclo deja de verlo, a
+los 3 ciclos pasa a `en_transito`, y una lectura dentro lo devuelve. A la gestión también
+llega por el canal de estados, pero **solo cuando es estable** (irfid
+`024_envio_diferido.sql`). La salida se encola tras `IRFID_CICLOS_ESTABLE_ENVIO` ciclos
+válidos seguidos (3 por defecto) en los que sigue fuera. La vuelta se encola tras otros
+tantos leyéndose dentro. Se envía con la hora real del cambio. Si oscila (sale y vuelve
+antes de ser estable) se anula y no se manda nada: para la gestión no ha pasado nada.
+
 No hay dirección: con una sola antena de puerta no se distingue entrar de salir. Una caja
 que entra durante la sesión también queda bloqueada, y la liberan los ciclos.
 
